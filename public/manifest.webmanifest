@@ -1,0 +1,10 @@
+{
+  "name":"DRIFT // Loudest Riot Sounds",
+  "short_name":"DRIFT",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#0a0c0b",
+  "theme_color":"#0a0c0b",
+  "description":"DRIFT: a psychogeographic Hines Park field game by Loudest Riot Sounds.",
+  "orientation":"portrait"
+}

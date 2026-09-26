@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0c0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>DRIFT // Loudest Riot Sounds</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="topbar">
+    <div>
+      <div class="kicker">LOUDEST RIOT SOUNDS</div>
+      <h1>DRIFT</h1>
+    </div>
+    <div class="top-actions">
+      <button id="helpBtn" class="icon-btn" type="button" aria-label="Quick start">?</button>
+      <button id="locateBtn" class="icon-btn" type="button" aria-label="Use my location">◎</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="fieldView" class="view active">
+      <div id="map" aria-label="DRIFT Hines Park map"></div>
+      <div class="map-shade"></div>
+      <div class="map-head">
+        <div class="eyebrow">HINES PARK // WAYNE COUNTY FIELD SYSTEM</div>
+        <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION DORMANT</span></div>
+        <div class="layer-chips" aria-label="Map layers">
+          <button id="landmarksToggle" class="chip active" type="button">LANDMARKS</button>
+          <button id="citiesToggle" class="chip active" type="button">CITIES</button>
+        </div>
+      </div>
+
+      <aside id="tracker" class="tracker" aria-label="Walking path tracker">
+        <div class="tracker-top">
+          <div>
+            <div class="eyebrow">BREADCRUMB PATH</div>
+            <strong id="trackStatus">READY</strong>
+          </div>
+          <button id="trackStartBtn" class="mini-primary" type="button">START DRIFT</button>
+        </div>
+        <div class="track-stats"><span id="trackDistance">0.00 MI</span><span id="trackTime">00:00</span></div>
+        <div class="track-actions">
+          <button id="trackStopBtn" type="button" disabled>STOP + SAVE</button>
+          <button id="trackClearBtn" type="button">CLEAR</button>
+        </div>
+      </aside>
+
+      <div id="signalDeck" class="signal-deck" aria-live="polite"></div>
+    </section>
+
+    <section id="archiveView" class="view">
+      <div class="section-head">
+        <div class="eyebrow">PERSONAL ARCHIVE</div>
+        <h2>INTERCEPT LOG</h2>
+        <p class="lede">Signals you reached and walks you recorded stay on this device in v0.3.</p>
+      </div>
+      <div id="archiveStats" class="stats"></div>
+      <div id="archiveList" class="archive-list"></div>
+      <div class="section-head compact"><div class="eyebrow">SAVED DRIFTS</div></div>
+      <div id="routeList" class="archive-list"></div>
+    </section>
+
+    <section id="jpView" class="view">
+      <div class="section-head">
+        <div class="eyebrow">SHARED FIELD SIGNATURE</div>
+        <h2>JP PICKS</h2>
+        <p class="lede">Two relay points selected in the field. JP belongs to both of you. No invented coordinates, which is an unexpectedly civilized rule.</p>
+      </div>
+      <div id="jpList" class="jp-list"></div>
+      <details class="editor-card">
+        <summary>FIELD EDITOR</summary>
+        <p>Enter coordinates after a JP pick is chosen. These stay on this device until a later server-backed version exists.</p>
+        <form id="jpForm">
+          <label>Pick
+            <select id="jpPickId">
+              <option value="jp-01">JP PICK 01</option>
+              <option value="jp-02">JP PICK 02</option>
+            </select>
+          </label>
+          <label>Location name<input id="jpName" required placeholder="e.g. Levan Knoll" /></label>
+          <div class="form-grid">
+            <label>Latitude<input id="jpLat" required inputmode="decimal" placeholder="42.00000" /></label>
+            <label>Longitude<input id="jpLng" required inputmode="decimal" placeholder="-83.00000" /></label>
+          </div>
+          <label>Written clue<textarea id="jpClue" rows="3" placeholder="Follow the river until..."></textarea></label>
+          <button class="primary" type="submit">ASSIGN JP PICK</button>
+        </form>
+      </details>
+    </section>
+
+    <section id="signalView" class="view signal-view">
+      <button id="backBtn" class="back-btn" type="button">← FIELD</button>
+      <div id="signalDetail"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="App navigation">
+    <button class="tab active" data-view="fieldView"><span>⌖</span>FIELD</button>
+    <button class="tab" data-view="archiveView"><span>▤</span>ARCHIVE</button>
+    <button class="tab" data-view="jpView"><span>JP</span>PICKS</button>
+  </nav>
+
+  <div id="quickStart" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="quickStartTitle">
+      <div class="modal-head">
+        <div><div class="eyebrow">DISTRIBUTED RELAYS IN FIELD TERRAIN</div><h2 id="quickStartTitle">DRIFT // QUICK START</h2></div>
+        <button id="closeHelpBtn" class="icon-btn" aria-label="Close quick start">×</button>
+      </div>
+      <ol class="quick-list">
+        <li><strong>ENTER THE FIELD.</strong><span>Allow location access. DRIFT measures your distance to signals on-device.</span></li>
+        <li><strong>CHOOSE A SIGNAL.</strong><span>Signals are sound, image, text or physical artifacts. Landmarks are just orientation.</span></li>
+        <li><strong>CHOOSE HOW TO NAVIGATE.</strong><span><b>CELESTIAL</b> uses visible guide stars, <b>FIELD MAP</b> uses the real Hines map, and <b>WRITTEN CLUE</b> reveals the prose direction.</span></li>
+        <li><strong>DRIFT.</strong><span>Turn on START DRIFT if you want the map to draw and save your breadcrumb trail.</span></li>
+        <li><strong>INTERCEPT.</strong><span>Within 140 m the transmission unlocks. NFC/QR can deep-link directly to a signal.</span></li>
+      </ol>
+      <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
+      <button id="gotItBtn" class="primary" type="button">ENTER THE FIELD</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
