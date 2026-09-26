@@ -1,6 +1,7 @@
 const FIELD_KEY='lr-drift-v03';
 const OLD_KEYS=['lr-field-relay-v01'];
 const ONBOARD_KEY='lr-drift-onboarded-v03';
+const START_HINT_KEY='lr-drift-start-hint-v04';
 const INTERCEPT_RADIUS=140;
 const DETECT_RADIUS=2500;
 const HINES_BOUNDS=L.latLngBounds([42.300,-83.520],[42.455,-83.225]);
@@ -354,6 +355,9 @@ document.getElementById('quickStart').addEventListener('click',e=>{if(e.target.i
 document.getElementById('trackStartBtn').onclick=startTracking;
 document.getElementById('trackStopBtn').onclick=stopTracking;
 document.getElementById('trackClearBtn').onclick=clearTrack;
+const startHint=document.getElementById('startHint');
+if(localStorage.getItem(START_HINT_KEY)==='1')startHint.classList.add('dismissed');
+document.getElementById('dismissStartHint').onclick=()=>{localStorage.setItem(START_HINT_KEY,'1');startHint.classList.add('dismissed');};
 
 document.getElementById('landmarksToggle').onclick=e=>{
   const on=map.hasLayer(landmarkLayer);if(on)map.removeLayer(landmarkLayer);else landmarkLayer.addTo(map);setLayerButton(e.currentTarget,!on);

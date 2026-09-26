@@ -39,6 +39,13 @@
         </div>
       </div>
 
+      <aside id="startHint" class="start-hint" aria-label="How to start">
+        <div class="eyebrow">START HERE</div>
+        <strong>Tap ◎, then choose a signal below.</strong>
+        <p>Open a destination card to see CELESTIAL, FIELD MAP, and WRITTEN CLUE directions.</p>
+        <button id="dismissStartHint" type="button">GOT IT</button>
+      </aside>
+
       <aside id="tracker" class="tracker" aria-label="Walking path tracker">
         <div class="tracker-top">
           <div>
@@ -116,11 +123,11 @@
         <button id="closeHelpBtn" class="icon-btn" aria-label="Close quick start">×</button>
       </div>
       <ol class="quick-list">
-        <li><strong>ENTER THE FIELD.</strong><span>Allow location access. DRIFT measures your distance to signals on-device.</span></li>
-        <li><strong>CHOOSE A SIGNAL.</strong><span>Signals are sound, image, text or physical artifacts. Landmarks are just orientation.</span></li>
-        <li><strong>CHOOSE HOW TO NAVIGATE.</strong><span><b>CELESTIAL</b> uses visible guide stars, <b>FIELD MAP</b> uses the real Hines map, and <b>WRITTEN CLUE</b> reveals the prose direction.</span></li>
-        <li><strong>DRIFT.</strong><span>Turn on START DRIFT if you want the map to draw and save your breadcrumb trail.</span></li>
-        <li><strong>INTERCEPT.</strong><span>Within 140 m the transmission unlocks. NFC/QR can deep-link directly to a signal.</span></li>
+        <li><strong>1. TURN ON LOCATION.</strong><span>Tap <b>◎</b> in the upper-right corner and allow location access.</span></li>
+        <li><strong>2. PICK A DESTINATION.</strong><span>Stay on <b>FIELD</b>, then tap a signal card such as <b>NEWBURGH POINTE</b> or <b>HELMS HAVEN</b>.</span></li>
+        <li><strong>3. FOLLOW A DIRECTION.</strong><span>On the signal page, start with <b>CELESTIAL</b>. Face the named star, then turn the number of degrees shown. Use <b>FIELD MAP</b> for the map or <b>WRITTEN CLUE</b> for words.</span></li>
+        <li><strong>4. RECORD YOUR DRIFT.</strong><span>Back on <b>FIELD</b>, tap <b>START DRIFT</b> to draw your path. Tap <b>STOP + SAVE</b> when you finish.</span></li>
+        <li><strong>5. REACH THE SIGNAL.</strong><span>Within 140 m, the transmission unlocks. Tap <b>LOG INTERCEPT</b> to save the discovery.</span></li>
       </ol>
       <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
       <button id="gotItBtn" class="primary" type="button">ENTER THE FIELD</button>
