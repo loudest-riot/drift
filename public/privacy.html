@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0c0b" />
+  <title>Privacy // DRIFT</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="proper.css" />
+</head>
+<body class="privacy-page">
+  <main class="privacy-wrap">
+    <a class="privacy-back" href="./">← DRIFT</a>
+    <div class="eyebrow">LOUDEST RIOT SOUNDS // DRIFT</div>
+    <h1>PRIVACY + FIELD DATA</h1>
+    <div class="privacy-callout"><strong>SHORT VERSION</strong><p>DRIFT uses location to navigate and verify that you reached a signal. Your exact location is not stored with a shared intercept. Public sharing is optional.</p></div>
+
+    <h2>LOCATION</h2>
+    <p>When you allow location access, DRIFT uses your device location for the map, distance-to-signal display, celestial guidance, breadcrumb recording, and signal verification.</p>
+    <p>When you submit a shared intercept, your current latitude and longitude are sent to the DRIFT Worker long enough to calculate whether you are within the signal's allowed radius. The DRIFT database stores the verification result, not those submitted coordinates.</p>
+
+    <h2>LOCAL DEVICE DATA</h2>
+    <p>DRIFT uses browser storage for onboarding preferences, your local intercept archive, and saved breadcrumb walks. Breadcrumb walks may contain precise route points. They remain on your device in the current app unless you deliberately use a future publishing feature.</p>
+
+    <h2>SHARED INTERCEPTS</h2>
+    <p>If you choose to transmit an intercept to DRIFT, the shared database may store the signal identifier, an optional field name, an optional note, whether you chose public display, a verification flag, an optional photo reference, and the submission time.</p>
+    <p>The checkbox to show an intercept in the public activity log is off by default. A non-public intercept is not displayed in the public activity feed.</p>
+
+    <h2>PHOTOS</h2>
+    <p>If you attach a photo, it may be stored in Cloudflare R2 object storage and associated with the intercept. Do not submit photos containing information you do not want stored, including faces, license plates, addresses, or other identifying details.</p>
+
+    <h2>NETWORK + HOSTING DATA</h2>
+    <p>DRIFT is hosted on Cloudflare. Like other internet infrastructure providers, Cloudflare may process ordinary request and security metadata as part of delivering and protecting the service. DRIFT's application database does not intentionally add your IP address or exact verification coordinates to an intercept record.</p>
+
+    <h2>RETENTION + REMOVAL</h2>
+    <p>There is not yet an automated deletion schedule for shared intercept records. To request removal of a shared note, field name, photo, or intercept, email <a href="mailto:sounds@loudestriot.com">sounds@loudestriot.com</a> with enough information to identify the submission.</p>
+
+    <h2>FIELD SAFETY</h2>
+    <p>DRIFT is an orientation and art experience, not a guarantee that a route is safe or legally accessible. Stay on public land, obey closures and posted rules, respect cemeteries and memorial sites, and do not place or retrieve objects at burial sites or sensitive historic markers.</p>
+
+    <h2>CHANGES</h2>
+    <p>This notice will be updated as DRIFT gains new shared features. Material changes should be reflected here before those features are treated as part of the normal public app.</p>
+
+    <p class="directory-note">Last updated: October 3, 2026.</p>
+  </main>
+</body>
+</html>
