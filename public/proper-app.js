@@ -17,6 +17,12 @@
     try{renderDeck();renderMarkers();renderArchive();}catch{}
   }
 
+  function correctDirectoryLinks(){
+    document.querySelectorAll('.directory-links a').forEach(link=>{
+      if(link.textContent.trim()==='nøfuture')link.href='https://nøfuture.com';
+    });
+  }
+
   function currentSignal(){
     const detail=document.querySelector('#signalDetail .detail-id');
     if(!detail||typeof state==='undefined')return null;
@@ -161,6 +167,7 @@
   },true);
 
   archiveAndRemoveJP();
+  correctDirectoryLinks();
   loadSharedActivity();
   updateBackendStatus();
   window.addEventListener('online',()=>{loadSharedActivity();updateBackendStatus();});
