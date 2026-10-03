@@ -14,18 +14,21 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="proper.css" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
-    <div class="brand-lockup" aria-label="DRIFT by Loudest Riot Sounds">
-      <img class="brand-glyph" src="icons/signal-glyph-192.png" alt="" aria-hidden="true" />
-      <div class="brand-copy">
-        <img class="drift-wordmark" src="https://raw.githubusercontent.com/loudest-riot/drift/main/drift-logo-light.png" alt="DRIFT" />
-        <div class="brand-expansion">DISTRIBUTED RELAYS IN FIELD TERRAIN</div>
-        <div class="brand-imprint">LOUDEST RIOT SOUNDS</div>
+    <a class="brand-home" href="./" aria-label="DRIFT home">
+      <div class="brand-lockup">
+        <img class="brand-glyph" src="icons/signal-glyph-192.png" alt="" aria-hidden="true" />
+        <div class="brand-copy">
+          <img class="drift-wordmark" src="https://raw.githubusercontent.com/loudest-riot/drift/main/drift-logo-light.png" alt="DRIFT" />
+          <div class="brand-expansion">DISTRIBUTED RELAYS IN FIELD TERRAIN</div>
+          <div class="brand-imprint">LOUDEST RIOT SOUNDS</div>
+        </div>
       </div>
-    </div>
+    </a>
     <div class="top-actions">
       <button id="helpBtn" class="icon-btn" type="button" aria-label="Quick start">?</button>
       <button id="locateBtn" class="icon-btn" type="button" aria-label="Use my location">◎</button>
@@ -74,40 +77,73 @@
       <div class="section-head">
         <div class="eyebrow">PERSONAL ARCHIVE</div>
         <h2>INTERCEPT LOG</h2>
-        <p class="lede">Signals you reach and walks you record are saved on this device.</p>
+        <p class="lede">Your local intercepts and saved walks stay on this device. Shared intercepts appear separately below.</p>
       </div>
       <div id="archiveStats" class="stats"></div>
       <div id="archiveList" class="archive-list"></div>
       <div class="section-head compact"><div class="eyebrow">SAVED DRIFTS</div></div>
       <div id="routeList" class="archive-list"></div>
+      <div class="section-head compact">
+        <div class="eyebrow">SHARED FIELD LOG</div>
+        <h2>RECENT INTERCEPTS</h2>
+      </div>
+      <div id="sharedActivity" class="shared-section"><div class="lockbox">ACQUIRING SHARED FIELD LOG…</div></div>
     </section>
 
-    <section id="jpView" class="view">
+    <section id="infoView" class="view">
       <div class="section-head">
-        <div class="eyebrow">FIELD PICKS</div>
-        <h2>JP PICKS</h2>
-        <p class="lede">Two relay points reserved for field selection. Assign coordinates only after a location is chosen.</p>
+        <div class="eyebrow">DRIFT // LOUDEST RIOT SOUNDS</div>
+        <h2>FIELD DIRECTORY</h2>
+        <p class="lede">Related transmissions, releases, project links, contact, and the boring-but-important data rules.</p>
       </div>
-      <div id="jpList" class="jp-list"></div>
-      <details class="editor-card">
-        <summary>FIELD EDITOR</summary>
-        <p>Enter coordinates after a JP pick is chosen. These stay on this device until a later server-backed version exists.</p>
-        <form id="jpForm">
-          <label>Pick
-            <select id="jpPickId">
-              <option value="jp-01">JP PICK 01</option>
-              <option value="jp-02">JP PICK 02</option>
-            </select>
-          </label>
-          <label>Location name<input id="jpName" required placeholder="e.g. Levan Knoll" /></label>
-          <div class="form-grid">
-            <label>Latitude<input id="jpLat" required inputmode="decimal" placeholder="42.00000" /></label>
-            <label>Longitude<input id="jpLng" required inputmode="decimal" placeholder="-83.00000" /></label>
+      <div class="backend-card">
+        <div class="eyebrow">SHARED SERVICES</div>
+        <strong id="backendStatus">CHECKING D1 // R2</strong>
+        <p>DRIFT still works in device mode if shared services are unavailable.</p>
+      </div>
+      <div class="info-directory">
+        <section class="directory-group">
+          <h3>FIELD</h3>
+          <div class="directory-links">
+            <a href="https://relay.loudestriot.com" target="_blank" rel="noreferrer">Relay Archive</a>
+            <a class="internal" href="./">DRIFT Home</a>
           </div>
-          <label>Written clue<textarea id="jpClue" rows="3" placeholder="Follow the river until..."></textarea></label>
-          <button class="primary" type="submit">ASSIGN JP PICK</button>
-        </form>
-      </details>
+        </section>
+        <section class="directory-group">
+          <h3>MUSIC + MERCH</h3>
+          <div class="directory-links">
+            <a href="https://nfuture.bandcamp.com" target="_blank" rel="noreferrer">nøfuture on Bandcamp</a>
+            <a href="https://loudestriot.com" target="_blank" rel="noreferrer">Loudest Riot Sounds</a>
+            <a href="https://nofuture.com" target="_blank" rel="noreferrer">nøfuture</a>
+          </div>
+        </section>
+        <section class="directory-group">
+          <h3>SOCIAL</h3>
+          <div class="directory-links">
+            <a href="https://www.instagram.com/nofuture/" target="_blank" rel="noreferrer">Instagram @nofuture</a>
+          </div>
+        </section>
+        <section class="directory-group">
+          <h3>CONTACT + DATA</h3>
+          <div class="directory-links">
+            <a class="internal" href="contact.html">Contact</a>
+            <a class="internal" href="privacy.html">Privacy + Field Data</a>
+          </div>
+          <p class="directory-note">Public shared intercepts are opt-in. Exact verification coordinates are not stored with an intercept.</p>
+        </section>
+      </div>
+    </section>
+
+    <section id="jpView" class="view jp-legacy-view" hidden aria-hidden="true">
+      <div id="jpList"></div>
+      <form id="jpForm">
+        <select id="jpPickId"><option value="jp-01">JP PICK 01</option><option value="jp-02">JP PICK 02</option></select>
+        <input id="jpName" />
+        <input id="jpLat" />
+        <input id="jpLng" />
+        <textarea id="jpClue"></textarea>
+        <button type="submit">ARCHIVED</button>
+      </form>
     </section>
 
     <section id="signalView" class="view signal-view">
@@ -119,7 +155,7 @@
   <nav class="tabbar" aria-label="App navigation">
     <button class="tab active" data-view="fieldView"><span>⌖</span>FIELD</button>
     <button class="tab" data-view="archiveView"><span>▤</span>ARCHIVE</button>
-    <button class="tab" data-view="jpView"><span>JP</span>PICKS</button>
+    <button class="tab" data-view="infoView"><span>⋯</span>INFO</button>
   </nav>
 
   <div id="quickStart" class="modal" hidden>
@@ -134,7 +170,7 @@
         <li><strong>2. PICK A DESTINATION.</strong><span>Stay on <b>FIELD</b>, then tap a signal card such as <b>NEWBURGH POINTE</b> or <b>HELMS HAVEN</b>.</span></li>
         <li><strong>3. FOLLOW A DIRECTION.</strong><span>On the signal page, start with <b>CELESTIAL</b>. Face the named star, then turn the number of degrees shown. Use <b>FIELD MAP</b> for the map or <b>WRITTEN CLUE</b> for words.</span></li>
         <li><strong>4. RECORD YOUR DRIFT.</strong><span>Back on <b>FIELD</b>, tap <b>START DRIFT</b> to draw your path. Tap <b>STOP + SAVE</b> when you finish.</span></li>
-        <li><strong>5. REACH THE SIGNAL.</strong><span>Within 140 m, the transmission unlocks. Tap <b>LOG INTERCEPT</b> to save the discovery.</span></li>
+        <li><strong>5. REACH THE SIGNAL.</strong><span>Within 140 m, the transmission unlocks. Tap <b>LOG INTERCEPT</b> to save locally or transmit a verified shared intercept.</span></li>
       </ol>
       <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
       <button id="gotItBtn" class="primary" type="button">ENTER THE FIELD</button>
@@ -143,5 +179,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
+  <script src="proper-app.js"></script>
 </body>
 </html>
