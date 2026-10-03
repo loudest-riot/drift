@@ -10,15 +10,21 @@
   <title>DRIFT // Loudest Riot Sounds</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="preconnect" href="https://raw.githubusercontent.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="brand.css" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
-    <div>
-      <div class="kicker">LOUDEST RIOT SOUNDS</div>
-      <h1>DRIFT</h1>
+    <div class="brand-lockup" aria-label="DRIFT by Loudest Riot Sounds">
+      <img class="brand-glyph" src="icons/signal-glyph-192.png" alt="" aria-hidden="true" />
+      <div class="brand-copy">
+        <img class="drift-wordmark" src="https://raw.githubusercontent.com/loudest-riot/drift/main/drift-logo-light.png" alt="DRIFT" />
+        <div class="brand-expansion">DISTRIBUTED RELAYS IN FIELD TERRAIN</div>
+        <div class="brand-imprint">LOUDEST RIOT SOUNDS</div>
+      </div>
     </div>
     <div class="top-actions">
       <button id="helpBtn" class="icon-btn" type="button" aria-label="Quick start">?</button>
@@ -118,6 +124,7 @@
 
   <div id="quickStart" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="quickStartTitle">
+      <div class="signal-brand-stamp"><img src="icons/signal-glyph-192.png" alt="" aria-hidden="true" /><span>DRIFT // FIELD SIGNAL</span></div>
       <div class="modal-head">
         <div><div class="eyebrow">DISTRIBUTED RELAYS IN FIELD TERRAIN</div><h2 id="quickStartTitle">DRIFT // QUICK START</h2></div>
         <button id="closeHelpBtn" class="icon-btn" aria-label="Close quick start">×</button>
