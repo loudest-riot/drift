@@ -6,7 +6,9 @@
   "assets": {
     "directory": "./public/",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": [
+      "/api/*"
+    ],
     "not_found_handling": "single-page-application"
   },
   "d1_databases": [
@@ -14,6 +16,12 @@
       "binding": "DB",
       "database_name": "driftdb",
       "database_id": "248fea96-505a-42ce-8ad5-c0de1c03d99e"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "drift-photos"
     }
   ]
 }
