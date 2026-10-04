@@ -1,68 +1,145 @@
-/* DRIFT v0.11 field interaction cleanup. Runs after app.js. */
+/* DRIFT v0.12 field interaction cleanup. Runs after app.js. */
 (() => {
-  const fieldView = document.getElementById('fieldView');
-  const mapHead = document.querySelector('.map-head');
   const signalDeck = document.getElementById('signalDeck');
 
-  /* FIELD is a map, not a card carousel. Keep signal data, remove the tiles. */
+  /* FIELD is a map, not a card carousel. */
   if (signalDeck) signalDeck.hidden = true;
 
-  /* HINES PLACE picker: every named Hines landmark in one compact control. */
-  if (mapHead && typeof landmarks !== 'undefined') {
-    const picker = document.createElement('label');
-    picker.className = 'place-picker';
-    picker.innerHTML = '<span>HINES PLACE</span><select id="hinesPlaceSelect" aria-label="Choose a Hines Park place"><option value="">CHOOSE A PLACE…</option></select>';
+  /* HINES PLACES lives in Leaflet beside the existing HINES control, so it
+     cannot get buried inside map-head on small Safari viewports. */
+  if (typeof L !== 'undefined' && typeof map !== 'undefined' && typeof landmarks !== 'undefined') {
+    const HinesPlacesControl = L.Control.extend({
+      options: { position: 'topright' },
+      onAdd() {
+        const wrap = L.DomUtil.create('div', 'leaflet-bar hines-place-control');
+        const select = L.DomUtil.create('select', '', wrap);
+        select.id = 'hinesPlaceSelect';
+        select.setAttribute('aria-label', 'Choose a Hines Park place');
+        select.innerHTML = '<option value="">HINES PLACES ▾</option>';
 
-    const select = picker.querySelector('select');
-    landmarks.forEach((place, index) => {
-      const option = document.createElement('option');
-      option.value = String(index);
-      option.textContent = place.name.toUpperCase();
-      select.appendChild(option);
-    });
+        landmarks.forEach((place, index) => {
+          const option = document.createElement('option');
+          option.value = String(index);
+          option.textContent = place.name.toUpperCase();
+          select.appendChild(option);
+        });
 
-    select.addEventListener('change', () => {
-      if (select.value === '') return;
-      const place = landmarks[Number(select.value)];
-      if (!place) return;
+        L.DomEvent.disableClickPropagation(wrap);
+        L.DomEvent.disableScrollPropagation(wrap);
 
-      map.setView([place.lat, place.lng], 14, { animate: false });
-
-      /* If this named place is also an active signal, expose its marker label. */
-      if (typeof state !== 'undefined' && typeof markers !== 'undefined') {
-        const sig = state.signals.find(item => item.lat != null && (
-          item.name === place.name || distanceM(item, place) < 60
-        ));
-        if (sig) setTimeout(() => markers.get(sig.id)?.openTooltip?.(), 80);
+        select.addEventListener('change', () => {
+          if (select.value === '') return;
+          const place = landmarks[Number(select.value)];
+          if (!place) return;
+          map.setView([place.lat, place.lng], 14, { animate: false });
+          select.blur();
+        });
+        return wrap;
       }
     });
-
-    const status = mapHead.querySelector('.statusline');
-    status?.insertAdjacentElement('afterend', picker);
+    map.addControl(new HinesPlacesControl());
   }
 
-  /* Add readable signal labels to field markers. */
-  function addSignalTooltips() {
+  /* Slabs are contextual, not permanent UI. Desktop gets hover; touch devices
+     get tap because phones, despite their many achievements, do not hover. */
+  function slabHTML({ kicker, name, note, meta }) {
+    return `<div class="location-slab">
+      <div class="slab-kicker">${esc(kicker || 'HINES PARK')}</div>
+      <strong>${esc(name || '')}</strong>
+      ${meta ? `<div class="slab-meta">${esc(meta)}</div>` : ''}
+      ${note ? `<p>${esc(note)}</p>` : ''}
+    </div>`;
+  }
+
+  function closeAllSlabs(except = null) {
+    try {
+      landmarkLayer?.eachLayer?.(layer => { if (layer !== except) layer.closeTooltip?.(); });
+      markers?.forEach?.(marker => { if (marker !== except) marker.closeTooltip?.(); });
+    } catch (e) {}
+  }
+
+  function bindSlab(marker, html) {
+    if (!marker) return;
+    marker.unbindPopup?.();
+    marker.unbindTooltip?.();
+    marker.bindTooltip(html, {
+      direction: 'top',
+      offset: [0, -11],
+      className: 'location-slab-tooltip',
+      opacity: 1,
+      permanent: false,
+      interactive: false
+    });
+
+    marker.off('mouseover');
+    marker.off('mouseout');
+    marker.off('click');
+
+    marker.on('mouseover', () => {
+      closeAllSlabs(marker);
+      marker.openTooltip();
+    });
+    marker.on('mouseout', () => marker.closeTooltip());
+    marker.on('click', event => {
+      if (event?.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+      const open = marker.isTooltipOpen?.();
+      closeAllSlabs(open ? null : marker);
+      if (open) marker.closeTooltip();
+      else marker.openTooltip();
+    });
+  }
+
+  function applyLandmarkSlabs() {
+    if (typeof landmarkLayer === 'undefined' || typeof landmarks === 'undefined') return;
+    const layers = landmarkLayer.getLayers?.() || [];
+    layers.forEach((marker, index) => {
+      const place = landmarks[index];
+      if (!place) return;
+      bindSlab(marker, slabHTML({
+        kicker: place.sensitive ? `${place.kind} // SENSITIVE` : place.kind,
+        name: place.name,
+        note: place.note
+      }));
+    });
+  }
+
+  function applySignalSlabs() {
     if (typeof state === 'undefined' || typeof markers === 'undefined') return;
     state.signals.filter(sig => !sig.jp && sig.lat != null).forEach(sig => {
       const marker = markers.get(sig.id);
-      if (!marker || marker.getTooltip()) return;
-      marker.bindTooltip(`${sig.code} // ${sig.name}`, {
-        direction: 'top', offset: [0, -10], className: 'drift-signal-label'
-      });
+      if (!marker) return;
+      const st = signalState(sig);
+      bindSlab(marker, slabHTML({
+        kicker: `${sig.code} // SIGNAL`,
+        name: sig.name,
+        meta: st.d == null ? sig.status : `${fmtDistance(st.d)} // ${st.label}`,
+        note: sig.transmission
+      }));
     });
   }
+
+  if (typeof renderLandmarks === 'function') {
+    const originalRenderLandmarks = renderLandmarks;
+    renderLandmarks = function () {
+      originalRenderLandmarks();
+      applyLandmarkSlabs();
+    };
+  }
+  applyLandmarkSlabs();
 
   if (typeof renderMarkers === 'function') {
     const originalRenderMarkers = renderMarkers;
     renderMarkers = function () {
       originalRenderMarkers();
-      addSignalTooltips();
+      applySignalSlabs();
     };
-    renderMarkers();
-  } else addSignalTooltips();
+  }
+  applySignalSlabs();
 
-  /* FIELD MAP: destination first, never a wild regional fit. */
+  map?.on?.('click', () => closeAllSlabs());
+
+  /* FIELD MAP remains available for deep-linked signal pages, but returning to
+     FIELD never creates a persistent slab. */
   if (typeof focusSignalOnMap === 'function') {
     focusSignalOnMap = function (sig) {
       showView('fieldView');
@@ -73,7 +150,6 @@
 
       const reliable = userPos && Number.isFinite(userPos.accuracy) && userPos.accuracy <= 250;
       const distance = reliable ? distanceM(userPos, sig) : Infinity;
-
       if (reliable && distance <= 2500) {
         guidanceLine = L.polyline(
           [[userPos.lat, userPos.lng], [sig.lat, sig.lng]],
@@ -87,12 +163,9 @@
       } else {
         map.setView([sig.lat, sig.lng], 14, { animate: false });
       }
-
-      setTimeout(() => markers.get(sig.id)?.openTooltip?.(), 80);
     };
   }
 
-  /* Bind FIELD MAP directly when a signal detail is rendered. */
   if (typeof openSignal === 'function') {
     const originalOpenSignal = openSignal;
     openSignal = function (id) {
@@ -107,17 +180,7 @@
     };
   }
 
-  const currentMapButton = document.querySelector('.nav-mode[data-nav="map"]');
-  const currentCode = document.querySelector('.detail-id')?.textContent?.split('//')[0]?.trim();
-  if (currentMapButton && currentCode) {
-    const currentSig = state.signals.find(item => item.code === currentCode);
-    if (currentSig) currentMapButton.onclick = event => {
-      event.preventDefault();
-      focusSignalOnMap(currentSig);
-    };
-  }
-
-  /* Location is opt-in. Approximate iOS fixes never move the map. */
+  /* Location stays opt-in. Approximate iOS fixes never move the map. */
   const geoStatus = document.getElementById('geoStatus');
   const locateBtn = document.getElementById('locateBtn');
   let locationWatchId = null;
@@ -152,7 +215,6 @@
     }
 
     window.__driftLocationRequested = true;
-
     if (locationWatchId !== null) {
       if (userPos) map.setView([userPos.lat, userPos.lng], 14, { animate: false });
       return;
