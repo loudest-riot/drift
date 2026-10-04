@@ -1,0 +1,65 @@
+/* DRIFT v0.13 — static HINES PLACES control and stable field layout. */
+
+/* Static control: always present, same visual family as HINES. */
+.hines-place-static{
+  position:absolute;
+  top:58px;
+  right:8px;
+  z-index:650;
+}
+.hines-place-static select{
+  display:block;
+  height:40px;
+  min-width:154px;
+  max-width:190px;
+  border:0;
+  outline:0;
+  padding:0 34px 0 15px;
+  background:#f2f2ec;
+  color:#111;
+  border-radius:999px;
+  box-shadow:0 2px 10px rgba(0,0,0,.18);
+  font:800 10px/40px ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.04em;
+  -webkit-appearance:auto;
+  appearance:auto;
+}
+
+/* v12 dynamically created this. v13 does not, but hide any stale duplicate if cached. */
+.hines-place-control{display:none!important}
+
+/* Give top-right controls room without stealing the map. */
+.map-head{right:174px}
+
+/* Field is a map, not a card carousel. */
+.signal-deck{display:none!important}
+
+/* Marker slabs are invisible until hover/tap opens the Leaflet tooltip. */
+.leaflet-tooltip.location-slab-tooltip{
+  margin:0;
+  background:#f2f2ec;
+  color:#111;
+  border:0;
+  border-radius:16px;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+  padding:0;
+  min-width:185px;
+  max-width:250px;
+  white-space:normal;
+}
+.leaflet-tooltip.location-slab-tooltip:before{display:none}
+.location-slab{padding:12px 14px}
+.location-slab .slab-kicker{font:700 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:#626760;margin-bottom:5px}
+.location-slab strong{display:block;font:800 16px/1.08 ui-monospace,SFMono-Regular,Menlo,monospace;color:#111}
+.location-slab .slab-meta{margin-top:6px;font:700 9px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;color:#4f554f}
+.location-slab p{margin:7px 0 0;font:500 10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#4f554f}
+
+@media (max-width:430px){
+  .hines-place-static{top:55px}
+  .hines-place-static select{height:38px;min-width:145px;max-width:170px;font-size:9px}
+}
+
+@media (orientation:landscape) and (max-height:600px){
+  .hines-place-static{top:45px;right:max(8px,env(safe-area-inset-right,0px))}
+  .hines-place-static select{height:32px;min-width:132px;max-width:156px;font-size:8px}
+}
