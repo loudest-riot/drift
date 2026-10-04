@@ -1,5 +1,5 @@
-const CACHE='drift-v12';
-const CORE=['./','./index.html','./styles.css','./landscape.css','./ui.css','./app.js','./map-init-fix.js','./ui-fix.js','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png'];
+const CACHE='drift-v13';
+const CORE=['./','./index.html','./styles.css','./landscape.css','./ui.css','./field-v13.css','./app.js','./map-init-fix.js','./field-v13.js','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png'];
 
 self.addEventListener('install',e=>{
   self.skipWaiting();
