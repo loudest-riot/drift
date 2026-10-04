@@ -139,6 +139,21 @@ async function uploadPhoto(request,env,interceptId){
   return json({ok:true,photo_key:key},201);
 }
 
+async function getPhoto(request,env,interceptId){
+  if(!env.PHOTOS)return json({error:'photo_storage_unavailable'},503);
+  await ensureSchema(env);
+  const row=await env.DB.prepare(`SELECT photo_key FROM intercepts WHERE id=? AND public=1`).bind(interceptId).first();
+  if(!row?.photo_key)return json({error:'photo_not_found'},404);
+  const object=await env.PHOTOS.get(row.photo_key);
+  if(!object)return json({error:'photo_not_found'},404);
+  const headers=new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag',object.httpEtag);
+  headers.set('cache-control','public, max-age=3600');
+  headers.set('x-content-type-options','nosniff');
+  return new Response(object.body,{headers});
+}
+
 async function api(request,env){
   const url=new URL(request.url),path=url.pathname;
   if(path==='/api/health'){
@@ -151,6 +166,7 @@ async function api(request,env){
   if(path==='/api/intercepts'&&request.method==='POST')return createIntercept(request,env);
   const photoMatch=path.match(/^\/api\/intercepts\/([^/]+)\/photo$/);
   if(photoMatch&&request.method==='POST')return uploadPhoto(request,env,decodeURIComponent(photoMatch[1]));
+  if(photoMatch&&request.method==='GET')return getPhoto(request,env,decodeURIComponent(photoMatch[1]));
   return json({error:'not_found'},404);
 }
 
