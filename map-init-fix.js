@@ -1,12 +1,17 @@
-/* DRIFT v0.7 stable field bootstrap.
-   Keep startup calm: one dependable basemap, sane zoom, and no automatic
-   geolocation request before the visitor explicitly taps the locate button. */
+/* DRIFT v0.11 stable field bootstrap.
+   Keep startup calm, preserve sane zoom, and require explicit location opt-in. */
 (() => {
   if (!window.L || !L.Map) return;
 
-  /* Use the plain OSM layer for the debut. Other providers can come back after
-     field testing; fewer third-party requests means fewer Safari surprises. */
-  try { localStorage.setItem('lr-drift-map-style-v01', 'standard'); } catch (e) {}
+  /* Restore MINIMAL as the default once for the v0.11 UI. After this migration,
+     whatever map style the visitor chooses is allowed to persist. */
+  try {
+    const migrationKey = 'lr-drift-map-default-v11';
+    if (localStorage.getItem(migrationKey) !== '1') {
+      localStorage.setItem('lr-drift-map-style-v01', 'minimal');
+      localStorage.setItem(migrationKey, '1');
+    }
+  } catch (e) {}
 
   const originalGetCenter = L.Map.prototype.getCenter;
   const originalGetZoom = L.Map.prototype.getZoom;
@@ -22,9 +27,7 @@
     return originalGetZoom.call(this);
   };
 
-  /* Leaflet's automatic fit can zoom absurdly far out when an approximate
-     location or long route is included. Large extents get a useful field view
-     instead of a regional weather-map impression. */
+  /* Refuse absurd regional fits from broad locations/routes. */
   L.Map.prototype.fitBounds = function (bounds, options = {}) {
     const b = L.latLngBounds(bounds);
     const latSpan = Math.abs(b.getNorth() - b.getSouth());
@@ -35,8 +38,8 @@
     return originalFitBounds.call(this, b, { ...options, maxZoom: 16 });
   };
 
-  /* app.js currently calls startLocation() on load. Intercept that first watch
-     so Safari is not asked for location until the visitor actually chooses it. */
+  /* app.js still calls startLocation() on load. Intercept that first watch so
+     Safari is not asked for location until the visitor taps ◎. */
   const geo = navigator.geolocation;
   if (geo && typeof geo.watchPosition === 'function') {
     const originalWatch = geo.watchPosition.bind(geo);
