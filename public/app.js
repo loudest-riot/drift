@@ -126,7 +126,7 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 
 function initMap(){
   map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:19});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'}).addTo(map);
   signalLayer=L.layerGroup().addTo(map);
   landmarkLayer=L.layerGroup().addTo(map);
   municipalityLayer=L.layerGroup().addTo(map);
@@ -172,7 +172,7 @@ function renderDeck(){
   state.signals.forEach(sig=>{
     const st=signalState(sig),btn=document.createElement('button');
     btn.className=`signal-card ${st.label==='INTERCEPT'?'live':''}`;
-    btn.innerHTML=`<div class="row"><div><div class="eyebrow">${esc(sig.code)}${sig.jp?' // JP PICK':''}</div><h3>${esc(sig.name)}</h3></div><div class="strength"><div class="bars">${st.bars}</div>${st.label}</div></div><p>${esc(sig.region)}<br>${st.d!=null?fmtDistance(st.d):esc(sig.status)}</p>`;
+    btn.innerHTML=`<div class="row"><div><div class="eyebrow">${esc(sig.code)}</div><h3>${esc(sig.name)}</h3></div><div class="strength">${st.d!=null?fmtDistance(st.d):st.label}</div></div><p>${st.unlocked?'Signal acquired':esc(sig.region)}</p>`;
     btn.onclick=()=>openSignal(sig.id);deck.append(btn);
   });
 }
