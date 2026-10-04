@@ -1,4 +1,4 @@
-/* DRIFT v0.7 field interaction cleanup. Runs after app.js. */
+/* DRIFT v0.9 field interaction cleanup. Runs after app.js. */
 (() => {
   const isJpCard = card => /\/\/\s*JP PICK/i.test(card.textContent || '');
 
@@ -84,20 +84,33 @@
     };
   }
 
-  /* FIELD MAP means one tap, not a button that summons another button. */
-  document.addEventListener('click', event => {
-    const button = event.target.closest('.nav-mode[data-nav="map"]');
-    if (!button) return;
+  /* Bind FIELD MAP directly when each signal detail is rendered. No document-
+     level click interception; Safari gets one plain button -> one function. */
+  if (typeof openSignal === 'function') {
+    const originalOpenSignal = openSignal;
+    openSignal = function (id) {
+      originalOpenSignal(id);
+      const sig = state.signals.find(item => item.id === id);
+      if (!sig) return;
+      const mapButton = document.querySelector('.nav-mode[data-nav="map"]');
+      if (!mapButton) return;
+      mapButton.onclick = event => {
+        event.preventDefault();
+        focusSignalOnMap(sig);
+      };
+    };
+  }
 
-    const code = document.querySelector('.detail-id')?.textContent?.split('//')[0]?.trim();
-    if (!code || typeof state === 'undefined' || typeof focusSignalOnMap !== 'function') return;
-    const sig = state.signals.find(item => item.code === code);
-    if (!sig) return;
-
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    focusSignalOnMap(sig);
-  }, true);
+  /* If a deep-linked signal was already rendered before this file ran, bind it too. */
+  const currentMapButton = document.querySelector('.nav-mode[data-nav="map"]');
+  const currentCode = document.querySelector('.detail-id')?.textContent?.split('//')[0]?.trim();
+  if (currentMapButton && currentCode) {
+    const currentSig = state.signals.find(item => item.code === currentCode);
+    if (currentSig) currentMapButton.onclick = event => {
+      event.preventDefault();
+      focusSignalOnMap(currentSig);
+    };
+  }
 
   /* Location is opt-in. Approximate location can orient the map, but it is not
      trusted for proximity unlocks, tracking, or celestial calculations. */
