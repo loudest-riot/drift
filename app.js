@@ -69,7 +69,13 @@ const guideStars=[
 
 let state=loadState();
 let userPos=null;
-let map, userMarker, signalLayer, landmarkLayer, municipalityLayer, routeLayer;
+let map, userMarker, signalLayer, landmarkLayer, municipalityLayer, routeLayer, baseLayer;
+const MAP_STYLE_KEY='lr-drift-map-style-v01';
+const mapStyles={
+  minimal:{url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',opts:{maxZoom:20,subdomains:'abcd',attribution:'© OpenStreetMap contributors © CARTO'}},
+  terrain:{url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',opts:{maxZoom:17,attribution:'Map data © OpenStreetMap contributors, SRTM | Map style © OpenTopoMap'}},
+  standard:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',opts:{maxZoom:19,attribution:'© OpenStreetMap contributors'}}
+};
 let guidanceLine=null;
 let tracking=false, trackStartedAt=null, trackPoints=[], trackDistanceM=0, trackTimer=null;
 const markers=new Map();
@@ -126,7 +132,7 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 
 function initMap(){
   map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:19});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  setMapStyle(localStorage.getItem(MAP_STYLE_KEY)||'minimal',false);
   signalLayer=L.layerGroup().addTo(map);
   landmarkLayer=L.layerGroup().addTo(map);
   municipalityLayer=L.layerGroup().addTo(map);
@@ -143,6 +149,18 @@ function initMap(){
   });
   map.addControl(new HomeControl());
   renderLandmarks();renderMunicipalities();renderMarkers();renderSavedRoute();
+}
+function setMapStyle(style,announce=true){
+  if(!mapStyles[style])style='minimal';
+  const center=map.getCenter(),zoom=map.getZoom();
+  if(baseLayer)map.removeLayer(baseLayer);
+  const cfg=mapStyles[style];
+  baseLayer=L.tileLayer(cfg.url,cfg.opts).addTo(map);
+  baseLayer.bringToBack();
+  map.setView(center,zoom,{animate:false});
+  localStorage.setItem(MAP_STYLE_KEY,style);
+  document.querySelectorAll('.map-style').forEach(b=>b.classList.toggle('active',b.dataset.mapStyle===style));
+  if(announce)toast('MAP // '+style.toUpperCase());
 }
 function renderLandmarks(){
   landmarkLayer.clearLayers();
@@ -359,6 +377,7 @@ const startHint=document.getElementById('startHint');
 if(localStorage.getItem(START_HINT_KEY)==='1')startHint.classList.add('dismissed');
 document.getElementById('dismissStartHint').onclick=()=>{localStorage.setItem(START_HINT_KEY,'1');startHint.classList.add('dismissed');};
 
+document.querySelectorAll('.map-style').forEach(btn=>btn.onclick=()=>setMapStyle(btn.dataset.mapStyle));
 document.getElementById('landmarksToggle').onclick=e=>{
   const on=map.hasLayer(landmarkLayer);if(on)map.removeLayer(landmarkLayer);else landmarkLayer.addTo(map);setLayerButton(e.currentTarget,!on);
 };
