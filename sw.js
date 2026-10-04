@@ -1,4 +1,4 @@
-const CACHE='drift-v10';
+const CACHE='drift-v11';
 const CORE=['./','./index.html','./styles.css','./landscape.css','./ui.css','./app.js','./map-init-fix.js','./ui-fix.js','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png'];
 
 self.addEventListener('install',e=>{
