@@ -213,7 +213,7 @@ function showTrail(id){
   showMTB=true;showPaved=true;renderTrails();
   setLayerButton(document.getElementById('mtbToggle'),true);setLayerButton(document.getElementById('pavedToggle'),true);
   showView('fieldView');centerOnNextFix=false;
-  map.fitBounds(L.geoJSON({type:'FeatureCollection',features}).getBounds(),{padding:[30,130],animate:false});
+  map.fitBounds(L.geoJSON({type:'FeatureCollection',features}).getBounds(),{padding:[24,24],maxZoom:16,animate:false});
 }
 function renderLandmarks(){
   landmarkLayer.clearLayers();
