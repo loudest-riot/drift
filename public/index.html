@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="brand.css" />
   <link rel="stylesheet" href="proper.css" />
+  <link rel="stylesheet" href="modern.css" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -40,7 +41,7 @@
       <div id="map" aria-label="DRIFT Hines Park map"></div>
       <div class="map-shade"></div>
       <div class="map-head">
-        <div class="eyebrow">HINES PARK // WAYNE COUNTY FIELD SYSTEM</div>
+        <div class="eyebrow">HINES PARK</div>
         <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION DORMANT</span></div>
         <div class="layer-chips" aria-label="Map layers">
           <button id="landmarksToggle" class="chip active" type="button">LANDMARKS</button>
@@ -50,8 +51,8 @@
 
       <aside id="startHint" class="start-hint" aria-label="How to start">
         <div class="eyebrow">START HERE</div>
-        <strong>Tap ◎, then choose a signal below.</strong>
-        <p>Open a destination card to see CELESTIAL, FIELD MAP, and WRITTEN CLUE directions.</p>
+        <strong>Find a signal. Go toward it. See what you intercept.</strong>
+        <p>Use ◎ for your location, then tap any nearby signal.</p>
         <button id="dismissStartHint" type="button">GOT IT</button>
       </aside>
 
@@ -165,13 +166,11 @@
         <div><div class="eyebrow">DISTRIBUTED RELAYS IN FIELD TERRAIN</div><h2 id="quickStartTitle">DRIFT // QUICK START</h2></div>
         <button id="closeHelpBtn" class="icon-btn" aria-label="Close quick start">×</button>
       </div>
-      <ol class="quick-list">
-        <li><strong>1. TURN ON LOCATION.</strong><span>Tap <b>◎</b> in the upper-right corner and allow location access.</span></li>
-        <li><strong>2. PICK A DESTINATION.</strong><span>Stay on <b>FIELD</b>, then tap a signal card such as <b>NEWBURGH POINTE</b> or <b>HELMS HAVEN</b>.</span></li>
-        <li><strong>3. FOLLOW A DIRECTION.</strong><span>On the signal page, start with <b>CELESTIAL</b>. Face the named star, then turn the number of degrees shown. Use <b>FIELD MAP</b> for the map or <b>WRITTEN CLUE</b> for words.</span></li>
-        <li><strong>4. RECORD YOUR DRIFT.</strong><span>Back on <b>FIELD</b>, tap <b>START DRIFT</b> to draw your path. Tap <b>STOP + SAVE</b> when you finish.</span></li>
-        <li><strong>5. REACH THE SIGNAL.</strong><span>Within 140 m, the transmission unlocks. Tap <b>LOG INTERCEPT</b> to save locally or transmit a verified shared intercept.</span></li>
-      </ol>
+      <div class="quick-list">
+        <p><strong>DRIFT turns Hines Park into a field of hidden transmissions.</strong></p>
+        <p>Pick a signal. Follow the map, a written clue, or the sky. When you get close, the transmission unlocks.</p>
+        <p>Your path and intercepts can stay on your device. Sharing is optional.</p>
+      </div>
       <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
       <button id="gotItBtn" class="primary" type="button">ENTER THE FIELD</button>
     </div>
