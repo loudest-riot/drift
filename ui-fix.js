@@ -1,53 +1,47 @@
-/* DRIFT v0.10 field interaction cleanup. Runs after app.js. */
+/* DRIFT v0.11 field interaction cleanup. Runs after app.js. */
 (() => {
   const fieldView = document.getElementById('fieldView');
-  const isJpCard = card => /\/\/\s*JP PICK/i.test(card.textContent || '');
+  const mapHead = document.querySelector('.map-head');
+  const signalDeck = document.getElementById('signalDeck');
 
-  function cleanSignalDeck() {
-    document.querySelectorAll('.signal-card').forEach(card => {
-      if (isJpCard(card)) card.remove();
+  /* FIELD is a map, not a card carousel. Keep signal data, remove the tiles. */
+  if (signalDeck) signalDeck.hidden = true;
+
+  /* HINES PLACE picker: every named Hines landmark in one compact control. */
+  if (mapHead && typeof landmarks !== 'undefined') {
+    const picker = document.createElement('label');
+    picker.className = 'place-picker';
+    picker.innerHTML = '<span>HINES PLACE</span><select id="hinesPlaceSelect" aria-label="Choose a Hines Park place"><option value="">CHOOSE A PLACE…</option></select>';
+
+    const select = picker.querySelector('select');
+    landmarks.forEach((place, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = place.name.toUpperCase();
+      select.appendChild(option);
     });
+
+    select.addEventListener('change', () => {
+      if (select.value === '') return;
+      const place = landmarks[Number(select.value)];
+      if (!place) return;
+
+      map.setView([place.lat, place.lng], 14, { animate: false });
+
+      /* If this named place is also an active signal, expose its marker label. */
+      if (typeof state !== 'undefined' && typeof markers !== 'undefined') {
+        const sig = state.signals.find(item => item.lat != null && (
+          item.name === place.name || distanceM(item, place) < 60
+        ));
+        if (sig) setTimeout(() => markers.get(sig.id)?.openTooltip?.(), 80);
+      }
+    });
+
+    const status = mapHead.querySelector('.statusline');
+    status?.insertAdjacentElement('afterend', picker);
   }
 
-  if (typeof renderDeck === 'function') {
-    const originalRenderDeck = renderDeck;
-    renderDeck = function () {
-      originalRenderDeck();
-      cleanSignalDeck();
-    };
-    renderDeck();
-  } else cleanSignalDeck();
-
-  /* One stable basemap for field testing. */
-  const styleButtons = [...document.querySelectorAll('.map-style')];
-  styleButtons[0]?.closest('.layer-chips')?.remove();
-
-  /* Clean map mode: touching/zooming the map hides chrome and cards. */
-  const mapUiToggle = document.createElement('button');
-  mapUiToggle.id = 'mapUiToggle';
-  mapUiToggle.className = 'map-ui-toggle';
-  mapUiToggle.type = 'button';
-  mapUiToggle.textContent = 'SIGNALS';
-  mapUiToggle.setAttribute('aria-label', 'Show signal cards and map controls');
-  fieldView?.appendChild(mapUiToggle);
-
-  function collapseFieldUI() {
-    fieldView?.classList.add('map-clean');
-  }
-  function expandFieldUI() {
-    fieldView?.classList.remove('map-clean');
-  }
-  mapUiToggle.onclick = e => {
-    e.preventDefault();
-    e.stopPropagation();
-    expandFieldUI();
-  };
-
-  const mapContainer = map?.getContainer?.();
-  mapContainer?.addEventListener('pointerdown', collapseFieldUI, { passive: true });
-  mapContainer?.addEventListener('touchstart', collapseFieldUI, { passive: true });
-  map?.on?.('zoomstart', collapseFieldUI);
-
+  /* Add readable signal labels to field markers. */
   function addSignalTooltips() {
     if (typeof state === 'undefined' || typeof markers === 'undefined') return;
     state.signals.filter(sig => !sig.jp && sig.lat != null).forEach(sig => {
@@ -94,16 +88,14 @@
         map.setView([sig.lat, sig.lng], 14, { animate: false });
       }
 
-      collapseFieldUI();
       setTimeout(() => markers.get(sig.id)?.openTooltip?.(), 80);
     };
   }
 
-  /* Direct FIELD MAP button binding. */
+  /* Bind FIELD MAP directly when a signal detail is rendered. */
   if (typeof openSignal === 'function') {
     const originalOpenSignal = openSignal;
     openSignal = function (id) {
-      expandFieldUI();
       originalOpenSignal(id);
       const sig = state.signals.find(item => item.id === id);
       const mapButton = document.querySelector('.nav-mode[data-nav="map"]');
@@ -125,7 +117,7 @@
     };
   }
 
-  /* Location is opt-in. Critically: validate accuracy BEFORE moving the map. */
+  /* Location is opt-in. Approximate iOS fixes never move the map. */
   const geoStatus = document.getElementById('geoStatus');
   const locateBtn = document.getElementById('locateBtn');
   let locationWatchId = null;
@@ -174,7 +166,6 @@
       const lng = pos.coords.longitude;
       const accuracy = Math.round(pos.coords.accuracy || 9999);
 
-      /* Approximate iOS location is informational only. It NEVER moves the map. */
       if (accuracy > 250) {
         userPos = null;
         removeUserMarker();
@@ -183,7 +174,6 @@
           toast('LOCATION TOO BROAD // KEEPING HINES MAP IN PLACE');
           approximateNotified = true;
         }
-        renderDeck();
         renderMarkers();
         return;
       }
@@ -198,7 +188,6 @@
       }
 
       if (tracking) appendTrackPoint(userPos);
-      renderDeck();
       renderMarkers();
     }, err => {
       userPos = null;
