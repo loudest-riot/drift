@@ -126,7 +126,7 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 
 function initMap(){
   map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:19});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'}).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
   signalLayer=L.layerGroup().addTo(map);
   landmarkLayer=L.layerGroup().addTo(map);
   municipalityLayer=L.layerGroup().addTo(map);
