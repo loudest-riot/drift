@@ -2,16 +2,16 @@
 
 DRIFT is a location-based psychogeography and psychogeocaching PWA by Loudest Riot Sounds.
 
-## v0.14 — STABILIZED FIELD
+## v0.15 — STABILIZED FIELD
 - `public/` is the only deployed frontend source; root UI duplicates and patch files are retired.
 - One app script and one stylesheet, including shared-service behavior.
-- MINIMAL map on every fresh page load, with an optional STANDARD switch.
+- MINIMAL grayscale OpenStreetMap on every fresh page load, with an optional full-color STANDARD switch; no basemap API key is required.
 - Static, visually matched HINES and HINES PLACES controls.
 - No permanent signal-card carousel. Location details appear only on marker hover/tap.
 - DRIFT wordmark links home; the separate Signal glyph links to `https://go.loudestriot.com`.
 - Explicit location opt-in, one location watcher, and a 250 m accuracy gate. Approximate/invalid fixes clear the location marker and never recenter the map.
 - Dynamic viewport and safe-area layout for iPhone Safari portrait/landscape.
-- Service worker v14: all app code network-first, API requests uncached, and no HTML fallback for missing scripts/styles.
+- Service worker v15: all app code network-first, API requests uncached, and no HTML fallback for missing scripts/styles.
 
 ## v0.9 — FIELD TEST
 Status: shared-service foundation.

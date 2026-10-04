@@ -117,7 +117,7 @@ main{
 @media(max-width:520px){.shared-actions{grid-template-columns:1fr}.shared-actions .secondary{padding:11px}.info-directory{padding:12px}.backend-card{margin-left:12px;margin-right:12px}.shared-section{padding-left:12px;padding-right:12px}}
 
 
-/* Canonical mobile field layout — release 14. */
+/* Canonical mobile field layout — release 15. */
 :root{--glass:rgba(245,244,238,.94);--shadow:0 4px 18px rgba(0,0,0,.16);--header-height:72px;--nav-height:58px}
 body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#e9e9e4;height:100vh;height:100dvh;display:flex;flex-direction:column}
 .noise,.map-shade{display:none}
@@ -126,10 +126,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-se
 .drift-wordmark{width:min(180px,40vw);height:34px;max-height:34px;object-fit:contain;object-position:left center}
 .brand-expansion,.brand-imprint{display:none}
 .top-actions{gap:6px;margin-left:8px}.icon-btn,.signal-link{width:44px;height:44px;min-width:44px;border-radius:50%;border:1px solid #414741;background:#1b201b;color:#f1f3ed;display:grid;place-items:center}
-.signal-link{background:#f2f2ec;text-decoration:none}.signal-link img{width:26px;height:26px;object-fit:contain;filter:brightness(0)}
+.signal-link{background:#252627;text-decoration:none;overflow:hidden}.signal-link img{width:38px;height:38px;object-fit:contain;border-radius:50%}
 main{height:auto;flex:1;min-height:0;position:relative}.view{height:100%}
 #fieldView{overflow:hidden;background:#dfe2dc}#map{inset:0;filter:none}
 .leaflet-control-attribution{font-size:8px!important;background:rgba(255,255,255,.85)!important}
+.minimal-tiles{filter:grayscale(1) contrast(.8) brightness(1.08)}
 .map-head{top:12px;left:12px;right:auto;width:min(170px,calc(100% - 184px));padding:9px;border-radius:14px;background:var(--glass);box-shadow:var(--shadow);color:#151816;pointer-events:auto}
 .map-head>.eyebrow{display:none}.statusline{margin:0;font-size:10px;letter-spacing:0;color:#333b36;line-height:1.35;align-items:flex-start}.pulse{flex-shrink:0;margin-top:3px}
 .layer-chips{margin-top:7px;gap:4px;flex-wrap:wrap}.chip{min-height:32px;padding:5px 7px;border:0;border-radius:10px;background:#dce0d8;color:#424940;font-size:8px;letter-spacing:0}.chip.active{background:#202522;color:#fff}

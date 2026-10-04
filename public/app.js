@@ -143,8 +143,8 @@ function initMap(){
 function setMapStyle(style){
   const minimal=style!=='standard';
   if(baseLayer)map.removeLayer(baseLayer);
-  baseLayer=L.tileLayer(minimal?'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png':'https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,subdomains:'abcd',attribution:minimal?'© OpenStreetMap contributors © CARTO':'© OpenStreetMap contributors'
+  baseLayer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,className:minimal?'minimal-tiles':'',attribution:'© OpenStreetMap contributors'
   }).addTo(map);
   document.querySelectorAll('.map-style').forEach(btn=>{
     const active=btn.dataset.mapStyle===(minimal?'minimal':'standard');
