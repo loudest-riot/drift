@@ -1,24 +1,31 @@
-/* DRIFT v0.11 field UI refinement: map first, compact controls. */
+/* DRIFT v0.12 field UI refinement: map first, location info on demand. */
 
-.map-head{top:12px;left:12px;right:72px}
+.map-head{top:12px;left:12px;right:190px}
 .map-head>.eyebrow{font-size:8px;letter-spacing:.13em}
 .statusline{margin-top:5px;font-size:9px}
-
-/* Compact destination chooser. */
-.place-picker{display:block;width:min(245px,calc(100vw - 100px));margin-top:8px;color:var(--muted)}
-.place-picker span{display:block;margin-bottom:3px;font-size:7px;letter-spacing:.14em}
-.place-picker select{width:100%;height:34px;padding:0 30px 0 9px;border:1px solid rgba(241,243,237,.28);border-radius:3px;background:rgba(10,12,11,.9);color:var(--ink);font-size:9px;font-weight:700;letter-spacing:.05em;-webkit-appearance:auto;appearance:auto;backdrop-filter:blur(8px)}
 
 /* Map style and overlay controls stay small and visible. */
 .layer-chips{gap:3px;margin-top:6px;max-width:max-content;background:rgba(10,12,11,.68);padding:3px;border:1px solid rgba(241,243,237,.12);backdrop-filter:blur(7px)}
 .chip{min-height:28px;padding:4px 7px;font-size:7px;letter-spacing:.08em;background:rgba(10,12,11,.88);color:var(--muted);border:1px solid rgba(241,243,237,.2);-webkit-appearance:none;appearance:none}
 .chip.active{color:var(--green);background:rgba(167,255,79,.09);border-color:rgba(167,255,79,.42)}
 
+/* HINES + HINES PLACES are one visual family. */
+.leaflet-top.leaflet-right{top:8px;right:8px}
+.hines-home,
+.hines-place-control{border:0!important;background:#f2f2ec!important;color:#111!important;border-radius:999px!important;box-shadow:0 2px 10px rgba(0,0,0,.18)!important;overflow:hidden!important}
+.hines-home{width:auto!important;min-width:76px!important;height:40px!important;padding:0 15px!important;font:800 11px/40px ui-monospace,SFMono-Regular,Menlo,monospace!important;letter-spacing:.06em!important}
+.hines-place-control{height:40px!important;margin-top:7px!important}
+.hines-place-control select{display:block;height:40px;min-width:154px;max-width:190px;border:0!important;outline:0!important;padding:0 34px 0 15px;background:#f2f2ec;color:#111;font:800 10px/40px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;border-radius:999px;-webkit-appearance:auto;appearance:auto}
+
+/* Signal glyph in the top bar links out to the Loudest Riot signal portal. */
+.signal-link{width:42px;height:42px;border:1px solid var(--line);background:#111;border-radius:999px;display:grid;place-items:center;text-decoration:none;overflow:hidden}
+.signal-link img{display:block;width:25px;height:25px;object-fit:contain}
+
 /* The old bottom signal-card carousel is retired from FIELD. */
 .signal-deck[hidden]{display:none!important}
 
-/* Start guidance now occupies less territory. */
-.start-hint{top:168px;left:12px;width:min(235px,calc(100% - 24px));padding:9px 10px}
+/* Start guidance occupies little territory and disappears after onboarding. */
+.start-hint{top:104px;left:12px;width:min(230px,calc(100% - 24px));padding:9px 10px}
 .start-hint strong{font-size:11px;margin-top:4px}
 .start-hint p{display:none}
 .start-hint button{margin-top:7px;padding:5px 7px;font-size:7px}
@@ -33,7 +40,7 @@
 .tab[data-view="jpView"]{display:none}
 .tabbar{grid-template-columns:repeat(2,1fr)}
 
-/* Signal detail is kept compact when opened from a map marker/deep link. */
+/* Signal detail is kept compact for deep links/NFC routes. */
 .signal-view{padding:12px}
 .back-btn{height:36px;margin-bottom:10px}
 .detail-hero{min-height:168px;padding:13px}
@@ -49,22 +56,34 @@
 
 .signal-dot{width:18px;height:18px;border-width:2px;box-shadow:0 0 0 4px rgba(0,0,0,.22)}
 .landmark-dot{width:20px;height:20px;font-size:10px}
-.leaflet-tooltip.drift-signal-label{background:#0a0c0b;color:#f1f3ed;border:1px solid #4a554c;border-radius:2px;box-shadow:none;font:700 9px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;padding:5px 7px}
-.leaflet-tooltip.drift-signal-label:before{display:none}
 
-@media (max-width:380px){
-  .place-picker{width:min(220px,calc(100vw - 90px))}
+/* Location slabs only appear when a marker is hovered/tapped. */
+.leaflet-tooltip.location-slab-tooltip{margin:0;background:#f2f2ec;color:#111;border:0;border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.28);padding:0;min-width:185px;max-width:250px;white-space:normal}
+.leaflet-tooltip.location-slab-tooltip:before{display:none}
+.location-slab{padding:12px 14px}
+.location-slab .slab-kicker{font:700 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:#626760;margin-bottom:5px}
+.location-slab strong{display:block;font:800 16px/1.08 ui-monospace,SFMono-Regular,Menlo,monospace;color:#111}
+.location-slab .slab-meta{margin-top:6px;font:700 9px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;color:#4f554f}
+.location-slab p{margin:7px 0 0;font:500 10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#4f554f}
+
+@media (max-width:430px){
+  .map-head{right:174px}
+  .hines-home{min-width:70px!important;height:38px!important;line-height:38px!important;padding:0 13px!important}
+  .hines-place-control{height:38px!important}
+  .hines-place-control select{height:38px;min-width:145px;max-width:170px;font-size:9px}
   .tracker{width:180px}
 }
 
 @media (orientation:landscape) and (max-height:600px){
-  .map-head{top:6px;left:max(52px,calc(env(safe-area-inset-left,0px) + 44px));right:max(210px,calc(env(safe-area-inset-right,0px) + 200px))}
+  .map-head{top:6px;left:max(52px,calc(env(safe-area-inset-left,0px) + 44px));right:max(205px,calc(env(safe-area-inset-right,0px) + 195px))}
   .map-head>.eyebrow{display:none}
   .statusline{margin-top:0;font-size:8px}
-  .place-picker{width:205px;margin-top:4px}.place-picker span{display:none}.place-picker select{height:28px;font-size:8px}
   .layer-chips{margin-top:3px;padding:2px}.chip{min-height:23px;padding:3px 5px;font-size:6px}
   .start-hint{display:none}
-  .tracker{top:6px;bottom:auto;right:max(7px,env(safe-area-inset-right,0px));width:188px;padding:6px}
+  .tracker{top:6px;bottom:auto;right:max(7px,env(safe-area-inset-right,0px));width:178px;padding:6px}
+  .hines-home{height:32px!important;min-width:64px!important;line-height:32px!important;font-size:9px!important}
+  .hines-place-control{height:32px!important;margin-top:5px!important}
+  .hines-place-control select{height:32px;min-width:132px;max-width:156px;font-size:8px}
   .detail-hero{min-height:132px}.detail-hero h2{font-size:21px}
   .detail-grid{grid-template-columns:repeat(4,1fr)}
   .sky-compass{width:135px;height:135px}
