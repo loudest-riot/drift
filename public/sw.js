@@ -1,4 +1,4 @@
-const CACHE='drift-v10';
+const CACHE='drift-v11';
 const CORE=['./','./index.html','./styles.css','./brand.css','./proper.css','./landscape.css','./modern.css','./app.js','./proper-app.js','./privacy.html','./contact.html','./field-log.html','./field-log.js','./manifest.webmanifest','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
