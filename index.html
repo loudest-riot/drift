@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="landscape.css" />
-  <link rel="stylesheet" href="ui.css?v=11" />
+  <link rel="stylesheet" href="ui.css?v=12" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -24,6 +24,9 @@
       <div class="brand-imprint">A LOUDEST RIOT SOUNDS PROJECT</div>
     </div>
     <div class="top-actions">
+      <a class="signal-link" href="https://go.loudestriot.com" aria-label="Open Loudest Riot signal portal">
+        <img src="icons/signal-glyph-180.png" alt="" aria-hidden="true" />
+      </a>
       <button id="helpBtn" class="icon-btn" type="button" aria-label="Quick start">?</button>
       <button id="locateBtn" class="icon-btn" type="button" aria-label="Use my location">◎</button>
     </div>
@@ -49,8 +52,8 @@
 
       <aside id="startHint" class="start-hint" aria-label="How to start">
         <div class="eyebrow">START HERE</div>
-        <strong>Choose a Hines place from the menu.</strong>
-        <p>Use the place menu to move around Hines, tap map markers for details, and tap ◎ only when you want live location features.</p>
+        <strong>Choose a place from HINES PLACES.</strong>
+        <p>Hover a marker for details, or tap it on a phone. Tap ◎ only when you want live location features.</p>
         <button id="dismissStartHint" type="button">GOT IT</button>
       </aside>
 
@@ -131,11 +134,11 @@
         <button id="closeHelpBtn" class="icon-btn" aria-label="Close quick start">×</button>
       </div>
       <ol class="quick-list">
-        <li><strong>1. CHOOSE A HINES PLACE.</strong><span>Use the <b>HINES PLACE</b> menu on FIELD to jump to a named location along the corridor.</span></li>
-        <li><strong>2. READ THE MAP.</strong><span>Tap markers for landmark information. Active signal markers can open their signal page and navigation options.</span></li>
+        <li><strong>1. CHOOSE A HINES PLACE.</strong><span>Use the white <b>HINES PLACES</b> control beside the HINES button to jump to a named location.</span></li>
+        <li><strong>2. EXPLORE THE MAP.</strong><span>Hover a map location to reveal its information slab. On a phone, tap the marker instead.</span></li>
         <li><strong>3. CHOOSE A MAP STYLE.</strong><span><b>MINIMAL</b> is the default. <b>TERRAIN</b> and <b>STANDARD</b> remain available when you want more context.</span></li>
-        <li><strong>4. LOCATION IS OPTIONAL.</strong><span>Tap <b>◎</b> only when you want live range, breadcrumb tracking, or celestial guidance. Broad approximate locations will not move the map.</span></li>
-        <li><strong>5. RECORD A DRIFT.</strong><span>Tap <b>START DRIFT</b> to record a walk when precise location is available, then <b>STOP + SAVE</b> when finished.</span></li>
+        <li><strong>4. LOCATION IS OPTIONAL.</strong><span>Tap <b>◎</b> only for live range, breadcrumb tracking, or celestial guidance. Broad approximate locations will not move the map.</span></li>
+        <li><strong>5. FOLLOW THE SIGNAL.</strong><span>The signal glyph in the header opens <b>go.loudestriot.com</b>. NFC/QR signal links can still open their full signal pages directly.</span></li>
       </ol>
       <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
       <button id="gotItBtn" class="primary" type="button">ENTER THE FIELD</button>
@@ -143,8 +146,8 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="map-init-fix.js?v=11"></script>
+  <script src="map-init-fix.js?v=12"></script>
   <script src="app.js"></script>
-  <script src="ui-fix.js?v=11"></script>
+  <script src="ui-fix.js?v=12"></script>
 </body>
 </html>
