@@ -35,7 +35,12 @@
       <div class="map-head">
         <div class="eyebrow">HINES PARK // WAYNE COUNTY FIELD SYSTEM</div>
         <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION DORMANT</span></div>
-        <div class="layer-chips" aria-label="Map layers">
+        <div class="layer-chips" aria-label="Map view">
+          <button class="chip map-style active" data-map-style="minimal" type="button">MINIMAL</button>
+          <button class="chip map-style" data-map-style="terrain" type="button">TERRAIN</button>
+          <button class="chip map-style" data-map-style="standard" type="button">STANDARD</button>
+        </div>
+        <div class="layer-chips" aria-label="Map overlays">
           <button id="landmarksToggle" class="chip active" type="button">LANDMARKS</button>
           <button id="citiesToggle" class="chip active" type="button">CITIES</button>
         </div>
