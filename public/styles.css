@@ -128,9 +128,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-se
 .top-actions{gap:6px;margin-left:8px}.icon-btn,.signal-link{width:44px;height:44px;min-width:44px;border-radius:50%;border:1px solid #414741;background:#1b201b;color:#f1f3ed;display:grid;place-items:center}
 .signal-link{background:#252627;text-decoration:none;overflow:hidden}.signal-link img{width:38px;height:38px;object-fit:contain;border-radius:50%}
 main{height:auto;flex:1;min-height:0;position:relative}.view{height:100%}
-#fieldView{overflow:hidden;background:#dfe2dc}#map{inset:0;filter:none}
+#fieldView{overflow:hidden;background:#eeeee7}#map{inset:0;filter:none;background:#eeeee7}
 .leaflet-control-attribution{font-size:8px!important;background:rgba(255,255,255,.85)!important}
-.minimal-tiles{filter:grayscale(1) contrast(.8) brightness(1.08)}
+.map-overlays summary{cursor:pointer;font-size:9px;margin-top:8px;min-height:28px;display:flex;align-items:center;color:#424940}
+#trailMapStatus{display:block;font-size:9px;color:#626b62;margin-top:4px}#trailMapStatus:empty{display:none}
 .map-head{top:12px;left:12px;right:auto;width:min(170px,calc(100% - 184px));padding:9px;border-radius:14px;background:var(--glass);box-shadow:var(--shadow);color:#151816;pointer-events:auto}
 .map-head>.eyebrow{display:none}.statusline{margin:0;font-size:10px;letter-spacing:0;color:#333b36;line-height:1.35;align-items:flex-start}.pulse{flex-shrink:0;margin-top:3px}
 .layer-chips{margin-top:7px;gap:4px;flex-wrap:wrap}.chip{min-height:32px;padding:5px 7px;border:0;border-radius:10px;background:#dce0d8;color:#424940;font-size:8px;letter-spacing:0}.chip.active{background:#202522;color:#fff}
@@ -148,9 +149,11 @@ button.hines-control{cursor:pointer;text-align:center}select.hines-control{paddi
 .location-info .leaflet-popup-content-wrapper,.location-info .leaflet-popup-tip{background:#f2f2ec;color:#171a18;border:0;border-radius:14px;box-shadow:var(--shadow)}
 .location-info .leaflet-popup-content{margin:14px 16px;max-width:210px}.location-info .eyebrow{color:#626b62;font-size:9px;letter-spacing:.06em}.location-info .map-popup strong{font-size:16px;line-height:1.2;margin-top:5px}.location-info .map-popup p{color:#515b51;font-size:11px}
 .popup-details{margin-top:10px;padding:9px 12px;min-height:40px;border:0;border-radius:12px;background:#202522;color:#fff;font-size:10px}
-.tabbar{height:calc(var(--nav-height) + var(--safe-bottom));min-height:calc(var(--nav-height) + var(--safe-bottom));border:0;background:#101310;padding:0 env(safe-area-inset-right) var(--safe-bottom) env(safe-area-inset-left)}
+.tabbar{grid-template-columns:repeat(4,1fr);height:calc(var(--nav-height) + var(--safe-bottom));min-height:calc(var(--nav-height) + var(--safe-bottom));border:0;background:#101310;padding:0 env(safe-area-inset-right) var(--safe-bottom) env(safe-area-inset-left)}
 .tab{font-family:inherit;font-size:10px;letter-spacing:0;color:#8f9691}.tab span{font-size:17px}.tab.active{color:#f5f5ef}
-#archiveView,#infoView{background:#f3f3ef;color:#171a18;padding-bottom:24px}.section-head{padding:26px 18px 12px}.section-head .eyebrow{color:#727b72}.section-head h2{font-size:28px;letter-spacing:-.03em}.lede{color:#626b62}
+#archiveView,#infoView,#trailsView{background:#f3f3ef;color:#171a18;padding-bottom:24px}.section-head{padding:26px 18px 12px}.section-head .eyebrow{color:#727b72}.section-head h2{font-size:28px;letter-spacing:-.03em}.lede{color:#626b62}
+.trail-filters{display:flex;gap:8px;margin-top:14px}.trail-filters .chip{min-height:44px;min-width:72px;font-size:11px}
+.trail-card{border:1px solid #dddeda;border-radius:14px;background:#fff;padding:16px;margin-bottom:10px}.trail-card .eyebrow{color:#626b62;font-size:10px}.trail-card h3{font-size:20px;margin:7px 0}.trail-card p,.concept-guide p{font-size:14px;line-height:1.6;color:#515b51}.trail-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}.trail-actions a,.trail-actions button{display:flex;align-items:center;justify-content:center;min-height:44px;border:0;border-radius:10px;background:#e9eee5;color:#202522;padding:8px 12px;font-size:10px;text-decoration:none}.trail-actions button[aria-pressed="true"]{background:#202522;color:#fff}.trail-unmapped{font-size:11px;color:#626b62}.trail-source{margin:18px;font-size:12px;line-height:1.6;color:#626b62}.trail-source a{color:#344d36}.concept-guide{scroll-margin-top:16px}.concept-guide strong{color:#202522}
 .directory-group{border:0;background:transparent;padding:0}.directory-group h3{color:#687168;margin:0 10px 8px}.directory-links{overflow:hidden;border-radius:14px;background:#fff}.directory-links a{min-height:48px;padding:0 14px;border-color:#e7e7e2;color:#181b19;font-size:14px}.directory-note{color:#626b62}
 .backend-card{display:none}.archive-item,.shared-activity-item{border-color:#dddeda}
 .toast{bottom:calc(70px + var(--safe-bottom));border-radius:10px}
@@ -165,3 +168,6 @@ button.hines-control{cursor:pointer;text-align:center}select.hines-control{paddi
   .tab{display:flex;align-items:center;justify-content:center;gap:7px}.tab span{margin:0}
   .signal-view{padding:10px 14px}.detail-hero{min-height:160px}.detail-hero h2{font-size:24px}.modal-card{max-height:90dvh}
 }
+
+/* Standalone feature guide uses the shared app stylesheet. */
+body.features-page{display:block;max-width:none;width:auto;height:auto;min-height:100dvh;overflow:auto;background:#f3f3ef;color:#171a18}.features-page .privacy-wrap{height:auto;max-width:720px;margin:0 auto;padding:24px max(20px,env(safe-area-inset-right)) 40px max(20px,env(safe-area-inset-left));color:#171a18}.features-page h1{font-size:34px;letter-spacing:-.03em}.features-page .eyebrow{color:#626b62}.features-page .privacy-back{color:#344d36}.features-page p{font-size:16px;line-height:1.65;color:#515b51}.features-page .feature-intro{font-size:22px;line-height:1.35;color:#171a18}.feature-section{padding:18px 0;border-top:1px solid #dddeda}.features-page h2{font-size:19px;letter-spacing:.02em;color:#171a18}.features-page a{color:#344d36;text-underline-offset:3px}.feature-footer{display:flex;flex-wrap:wrap;gap:12px}.feature-footer a{min-height:44px;display:flex;align-items:center}

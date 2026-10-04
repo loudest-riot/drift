@@ -74,6 +74,11 @@ let userPos=null;
 let map, userMarker, signalLayer, landmarkLayer, municipalityLayer, routeLayer;
 let guidanceLine=null;
 let baseLayer,locationWatchId=null,centerOnNextFix=false;
+let trailData=null,trailLayer,trailFilter='all';
+let showMTB=true,showPaved=true;
+const TRAIL_SAVED_KEY='lr-drift-trails-v01';
+let savedTrails=new Set();
+try{const saved=JSON.parse(localStorage.getItem(TRAIL_SAVED_KEY));if(Array.isArray(saved))savedTrails=new Set(saved.filter(id=>typeof id==='string'));}catch{}
 let tracking=false, trackStartedAt=null, trackPoints=[], trackDistanceM=0, trackTimer=null;
 const markers=new Map();
 
@@ -130,21 +135,23 @@ function toast(msg){const t=document.createElement('div');t.className='toast';t.
 function initMap(){
   map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:19}).setView([42.3775,-83.3725],12);
   setMapStyle('minimal');
-  signalLayer=L.layerGroup().addTo(map);
-  landmarkLayer=L.layerGroup().addTo(map);
-  municipalityLayer=L.layerGroup().addTo(map);
+  signalLayer=L.layerGroup();
+  landmarkLayer=L.layerGroup();
+  municipalityLayer=L.layerGroup();
   routeLayer=L.layerGroup().addTo(map);
   map.fitBounds(HINES_BOUNDS,{padding:[18,18]});
 
   renderLandmarks();renderMunicipalities();renderMarkers();renderSavedRoute();
   // Safari viewport and orientation changes must not leave blank map strips.
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.getElementById('map'));
+  loadTrails();
 }
 function setMapStyle(style){
   const minimal=style!=='standard';
   if(baseLayer)map.removeLayer(baseLayer);
-  baseLayer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,className:minimal?'minimal-tiles':'',attribution:'© OpenStreetMap contributors'
+  baseLayer=null;
+  if(!minimal)baseLayer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,attribution:'© OpenStreetMap contributors'
   }).addTo(map);
   document.querySelectorAll('.map-style').forEach(btn=>{
     const active=btn.dataset.mapStyle===(minimal?'minimal':'standard');
@@ -164,6 +171,49 @@ function bindLocationInfo(marker,html){
       popup.addEventListener('mouseleave',()=>marker.closePopup());
     });
   }
+}
+async function loadTrails(){
+  try{
+    const response=await fetch('./data/hines-trails.json');
+    if(!response.ok)throw new Error('Trail data unavailable');
+    const data=await response.json();
+    if(data.geometry?.type!=='FeatureCollection'||!Array.isArray(data.trails)||!Array.isArray(data.accessPoints))throw new Error('Invalid trail data');
+    trailData=data;renderTrails();renderTrailCollection();
+    document.getElementById('trailMapStatus').textContent='';
+  }catch{
+    document.getElementById('trailMapStatus').textContent='TRAILS UNAVAILABLE';
+    document.getElementById('trailCollection').innerHTML='<p class="lede">Trail data could not load. Reload to try again, or use the MCMBA guide below.</p>';
+  }
+}
+function renderTrails(){
+  if(trailLayer)map.removeLayer(trailLayer);
+  if(!trailData)return;
+  trailLayer=L.geoJSON(trailData.geometry,{
+    attribution:'Trails: <a href="https://www.waynecounty.com/gisserver/rest/services/ParkFinder/Trails/MapServer/0">Wayne County</a>',
+    filter:feature=>feature.properties.kind==='mtb'?showMTB:showPaved,
+    style:feature=>({color:feature.properties.kind==='mtb'?'#344d36':'#899488',weight:feature.properties.kind==='mtb'?3:2,opacity:.9,dashArray:feature.properties.kind==='mtb'?null:'5 5'}),
+    onEachFeature:(feature,line)=>{
+      const p=feature.properties;
+      bindLocationInfo(line,`<div class="map-popup"><div class="eyebrow">${esc(p.kind.toUpperCase())} // ${esc(p.surface)}</div><strong>${esc(p.name)}</strong><button type="button" class="popup-details" data-trail="${esc(p.trailId)}">TRAIL COLLECTION →</button></div>`);
+    }
+  }).addTo(map);
+}
+function renderTrailCollection(){
+  if(!trailData)return;
+  const list=document.getElementById('trailCollection');
+  const cards=trailData.trails.map(trail=>{
+    const mapped=trailData.geometry.features.some(f=>f.properties.trailId===trail.id);
+    return {id:trail.id,html:`<article class="trail-card" id="trail-${esc(trail.id)}"><div class="eyebrow">${esc(trail.kind.toUpperCase())}${trail.miles?' // '+trail.miles+' MI':''}</div><h3>${esc(trail.name)}</h3><p>${esc(trail.note)}</p><div class="trail-actions">${mapped?`<button type="button" data-show-trail="${esc(trail.id)}">SHOW TRAIL</button>`:'<span class="trail-unmapped">Route not drawn</span>'}<a href="${esc(trail.source)}" target="_blank" rel="noreferrer">${mapped?'TRAIL GUIDE':'MAP + GUIDE'} ↗</a><button type="button" data-save-trail="${esc(trail.id)}" aria-pressed="${savedTrails.has(trail.id)}">${savedTrails.has(trail.id)?'SAVED ✓':'SAVE'}</button></div></article>`};
+  }).concat(trailData.accessPoints.map(point=>({id:point.id,html:`<article class="trail-card"><div class="eyebrow">ACCESS POINT</div><h3>${esc(point.name)}</h3><p>${esc(point.address)}</p><p>${esc(point.note)}</p><div class="trail-actions"><a href="https://maps.apple.com/?q=${encodeURIComponent(point.address)}" target="_blank" rel="noreferrer">DIRECTIONS ↗</a><a href="${esc(point.source)}" target="_blank" rel="noreferrer">SOURCE ↗</a><button type="button" data-save-trail="${esc(point.id)}" aria-pressed="${savedTrails.has(point.id)}">${savedTrails.has(point.id)?'SAVED ✓':'SAVE'}</button></div></article>`})));
+  list.innerHTML=cards.filter(card=>trailFilter==='all'||savedTrails.has(card.id)).map(card=>card.html).join('')||'<p class="lede">No saved picks yet. Choose ALL and save a trail or access point.</p>';
+}
+function showTrail(id){
+  const features=trailData?.geometry.features.filter(f=>f.properties.trailId===id);
+  if(!features?.length)return;
+  showMTB=true;showPaved=true;renderTrails();
+  setLayerButton(document.getElementById('mtbToggle'),true);setLayerButton(document.getElementById('pavedToggle'),true);
+  showView('fieldView');centerOnNextFix=false;
+  map.fitBounds(L.geoJSON({type:'FeatureCollection',features}).getBounds(),{padding:[30,130],animate:false});
 }
 function renderLandmarks(){
   landmarkLayer.clearLayers();
@@ -273,6 +323,7 @@ function openSignal(id){
   if(log)log.onclick=()=>{state.intercepts[sig.id]={time:new Date().toISOString(),name:sig.name};saveState();renderArchive();openSignal(sig.id);toast('INTERCEPT LOGGED');};
 }
 function focusSignalOnMap(sig){
+  signalLayer.addTo(map);setLayerButton(document.getElementById('signalsToggle'),true);
   showView('fieldView');
   if(guidanceLine){map.removeLayer(guidanceLine);guidanceLine=null;}
   if(reliableLocation(userPos)&&distanceM(userPos,sig)<=8000){
@@ -299,7 +350,7 @@ function showView(id,updateTabs=true){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
   if(updateTabs)document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===id));
   if(id==='fieldView')setTimeout(()=>map.invalidateSize(),50);
-  if(id==='archiveView')renderArchive();if(id==='jpView')renderJP();
+  if(id==='archiveView')renderArchive();if(id==='jpView')renderJP();if(id==='trailsView')renderTrailCollection();
 }
 
 function reliableLocation(pos){
@@ -384,7 +435,7 @@ function clearTrack(){
   document.getElementById('tracker').classList.remove('is-tracking');
 }
 
-function setLayerButton(btn,on){btn.classList.toggle('active',on);}
+function setLayerButton(btn,on){btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));}
 function toggleHelp(show){const m=document.getElementById('quickStart');m.hidden=!show;if(show)document.body.classList.add('modal-open');else document.body.classList.remove('modal-open');}
 
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showView(t.dataset.view));
@@ -401,9 +452,30 @@ document.querySelectorAll('.map-style').forEach(btn=>btn.onclick=()=>setMapStyle
 document.getElementById('map').addEventListener('click',e=>{
   const button=e.target.closest('[data-signal]');
   if(button){e.preventDefault();e.stopPropagation();openSignal(button.dataset.signal);}
+  const trailButton=e.target.closest('[data-trail]');
+  if(trailButton){trailFilter='all';document.querySelectorAll('[data-trail-filter]').forEach(b=>setLayerButton(b,b.dataset.trailFilter==='all'));showView('trailsView');document.getElementById('trail-'+trailButton.dataset.trail)?.scrollIntoView({block:'start'});}
 });
+document.querySelectorAll('[data-trail-filter]').forEach(button=>button.onclick=()=>{
+  trailFilter=button.dataset.trailFilter;
+  document.querySelectorAll('[data-trail-filter]').forEach(b=>setLayerButton(b,b===button));renderTrailCollection();
+});
+document.getElementById('trailCollection').addEventListener('click',e=>{
+  const save=e.target.closest('[data-save-trail]');
+  if(save){
+    const id=save.dataset.saveTrail;
+    const next=new Set(savedTrails);if(next.has(id))next.delete(id);else next.add(id);
+    try{localStorage.setItem(TRAIL_SAVED_KEY,JSON.stringify([...next]));savedTrails=next;renderTrailCollection();}catch{toast('COULD NOT SAVE ON THIS DEVICE');}
+  }
+  const show=e.target.closest('[data-show-trail]');if(show)showTrail(show.dataset.showTrail);
+});
+document.getElementById('mtbToggle').onclick=e=>{showMTB=!showMTB;renderTrails();setLayerButton(e.currentTarget,showMTB);};
+document.getElementById('pavedToggle').onclick=e=>{showPaved=!showPaved;renderTrails();setLayerButton(e.currentTarget,showPaved);};
+document.getElementById('signalsToggle').onclick=e=>{
+  const on=map.hasLayer(signalLayer);if(on)map.removeLayer(signalLayer);else signalLayer.addTo(map);setLayerButton(e.currentTarget,!on);
+};
 document.getElementById('helpBtn').onclick=()=>toggleHelp(true);
 document.getElementById('closeHelpBtn').onclick=()=>toggleHelp(false);
+document.getElementById('learnConceptBtn').onclick=()=>{toggleHelp(false);showView('infoView');document.getElementById('psychogeocaching').scrollIntoView({block:'start'});};
 document.getElementById('gotItBtn').onclick=()=>{localStorage.setItem(ONBOARD_KEY,'1');toggleHelp(false);};
 document.getElementById('quickStart').addEventListener('click',e=>{if(e.target.id==='quickStart')toggleHelp(false);});
 document.getElementById('trackStartBtn').onclick=startTracking;

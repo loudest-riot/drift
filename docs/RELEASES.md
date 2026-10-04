@@ -2,6 +2,15 @@
 
 DRIFT is a location-based psychogeography and psychogeocaching PWA by Loudest Riot Sounds.
 
+## v0.16 — TRAILS + PSYCHOGEOCACHING
+- MINIMAL has no street tiles or permanent labels; county trail lines are the default map content. STANDARD adds OpenStreetMap.
+- Optional signal, landmark, city, MTB, and paved overlays live in a collapsed control.
+- TRAILS collection includes Hines MTB routes and source-backed access addresses, with device-local favorites and Apple Maps directions.
+- Bundled Wayne County route geometry (retrieved October 4, 2026) works offline. Routes absent from the county dataset link to MCMBA's guide instead of guessed lines or pins.
+- A standalone Features page is linked from INFO and Quick Start.
+- INFO and Quick Start explain DRIFT psychogeocaches and their relationship to psychogeography and geocaching, with foundation links.
+- Service worker v16 includes the trail dataset, fetched network-first like app code.
+
 ## v0.15 — STABILIZED FIELD
 - `public/` is the only deployed frontend source; root UI duplicates and patch files are retired.
 - One app script and one stylesheet, including shared-service behavior.
