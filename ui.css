@@ -18,8 +18,8 @@
 .hines-place-control select{display:block;height:40px;min-width:154px;max-width:190px;border:0!important;outline:0!important;padding:0 34px 0 15px;background:#f2f2ec;color:#111;font:800 10px/40px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;border-radius:999px;-webkit-appearance:auto;appearance:auto}
 
 /* Signal glyph in the top bar links out to the Loudest Riot signal portal. */
-.signal-link{width:42px;height:42px;border:1px solid var(--line);background:#111;border-radius:999px;display:grid;place-items:center;text-decoration:none;overflow:hidden}
-.signal-link img{display:block;width:25px;height:25px;object-fit:contain}
+.signal-link{width:42px;height:42px;border:1px solid rgba(255,255,255,.25);background:#f2f2ec;border-radius:999px;display:grid;place-items:center;text-decoration:none;overflow:hidden}
+.signal-link img{display:block;width:25px;height:25px;object-fit:contain;filter:brightness(0)}
 
 /* The old bottom signal-card carousel is retired from FIELD. */
 .signal-deck[hidden]{display:none!important}
