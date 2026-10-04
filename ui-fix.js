@@ -1,5 +1,6 @@
-/* DRIFT v0.9 field interaction cleanup. Runs after app.js. */
+/* DRIFT v0.10 field interaction cleanup. Runs after app.js. */
 (() => {
+  const fieldView = document.getElementById('fieldView');
   const isJpCard = card => /\/\/\s*JP PICK/i.test(card.textContent || '');
 
   function cleanSignalDeck() {
@@ -8,7 +9,6 @@
     });
   }
 
-  /* Keep JP picks out of the public FIELD deck while preserving their data. */
   if (typeof renderDeck === 'function') {
     const originalRenderDeck = renderDeck;
     renderDeck = function () {
@@ -16,28 +16,46 @@
       cleanSignalDeck();
     };
     renderDeck();
-  } else {
-    cleanSignalDeck();
-  }
+  } else cleanSignalDeck();
 
-  /* Debut mode: one stable basemap. Landmarks and city labels remain useful
-     overlays, but the provider-switching controls are removed for now. */
+  /* One stable basemap for field testing. */
   const styleButtons = [...document.querySelectorAll('.map-style')];
   styleButtons[0]?.closest('.layer-chips')?.remove();
 
-  /* Add readable signal labels to field markers. */
+  /* Clean map mode: touching/zooming the map hides chrome and cards. */
+  const mapUiToggle = document.createElement('button');
+  mapUiToggle.id = 'mapUiToggle';
+  mapUiToggle.className = 'map-ui-toggle';
+  mapUiToggle.type = 'button';
+  mapUiToggle.textContent = 'SIGNALS';
+  mapUiToggle.setAttribute('aria-label', 'Show signal cards and map controls');
+  fieldView?.appendChild(mapUiToggle);
+
+  function collapseFieldUI() {
+    fieldView?.classList.add('map-clean');
+  }
+  function expandFieldUI() {
+    fieldView?.classList.remove('map-clean');
+  }
+  mapUiToggle.onclick = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    expandFieldUI();
+  };
+
+  const mapContainer = map?.getContainer?.();
+  mapContainer?.addEventListener('pointerdown', collapseFieldUI, { passive: true });
+  mapContainer?.addEventListener('touchstart', collapseFieldUI, { passive: true });
+  map?.on?.('zoomstart', collapseFieldUI);
+
   function addSignalTooltips() {
     if (typeof state === 'undefined' || typeof markers === 'undefined') return;
     state.signals.filter(sig => !sig.jp && sig.lat != null).forEach(sig => {
       const marker = markers.get(sig.id);
-      if (!marker) return;
-      if (!marker.getTooltip()) {
-        marker.bindTooltip(`${sig.code} // ${sig.name}`, {
-          direction: 'top',
-          offset: [0, -10],
-          className: 'drift-signal-label'
-        });
-      }
+      if (!marker || marker.getTooltip()) return;
+      marker.bindTooltip(`${sig.code} // ${sig.name}`, {
+        direction: 'top', offset: [0, -10], className: 'drift-signal-label'
+      });
     });
   }
 
@@ -48,13 +66,9 @@
       addSignalTooltips();
     };
     renderMarkers();
-  } else {
-    addSignalTooltips();
-  }
+  } else addSignalTooltips();
 
-  /* Never let an approximate or distant location yank FIELD MAP out to a
-     county/state view. Nearby precise fixes may frame user + signal; otherwise
-     the signal itself is the map focus. */
+  /* FIELD MAP: destination first, never a wild regional fit. */
   if (typeof focusSignalOnMap === 'function') {
     focusSignalOnMap = function (sig) {
       showView('fieldView');
@@ -63,10 +77,10 @@
         guidanceLine = null;
       }
 
-      const reliable = userPos && Number.isFinite(userPos.accuracy) && userPos.accuracy <= 500;
+      const reliable = userPos && Number.isFinite(userPos.accuracy) && userPos.accuracy <= 250;
       const distance = reliable ? distanceM(userPos, sig) : Infinity;
 
-      if (reliable && distance <= 3000) {
+      if (reliable && distance <= 2500) {
         guidanceLine = L.polyline(
           [[userPos.lat, userPos.lng], [sig.lat, sig.lng]],
           { weight: 2, dashArray: '5,7', opacity: .8 }
@@ -80,20 +94,20 @@
         map.setView([sig.lat, sig.lng], 14, { animate: false });
       }
 
+      collapseFieldUI();
       setTimeout(() => markers.get(sig.id)?.openTooltip?.(), 80);
     };
   }
 
-  /* Bind FIELD MAP directly when each signal detail is rendered. No document-
-     level click interception; Safari gets one plain button -> one function. */
+  /* Direct FIELD MAP button binding. */
   if (typeof openSignal === 'function') {
     const originalOpenSignal = openSignal;
     openSignal = function (id) {
+      expandFieldUI();
       originalOpenSignal(id);
       const sig = state.signals.find(item => item.id === id);
-      if (!sig) return;
       const mapButton = document.querySelector('.nav-mode[data-nav="map"]');
-      if (!mapButton) return;
+      if (!sig || !mapButton) return;
       mapButton.onclick = event => {
         event.preventDefault();
         focusSignalOnMap(sig);
@@ -101,7 +115,6 @@
     };
   }
 
-  /* If a deep-linked signal was already rendered before this file ran, bind it too. */
   const currentMapButton = document.querySelector('.nav-mode[data-nav="map"]');
   const currentCode = document.querySelector('.detail-id')?.textContent?.split('//')[0]?.trim();
   if (currentMapButton && currentCode) {
@@ -112,25 +125,28 @@
     };
   }
 
-  /* Location is opt-in. Approximate location can orient the map, but it is not
-     trusted for proximity unlocks, tracking, or celestial calculations. */
+  /* Location is opt-in. Critically: validate accuracy BEFORE moving the map. */
   const geoStatus = document.getElementById('geoStatus');
   const locateBtn = document.getElementById('locateBtn');
   let locationWatchId = null;
-  let centeredOnFix = false;
+  let centeredOnPreciseFix = false;
   let approximateNotified = false;
 
   if (geoStatus) geoStatus.textContent = 'LOCATION OFF // TAP ◎';
+
+  function removeUserMarker() {
+    if (!userMarker) return;
+    try { map.removeLayer(userMarker); } catch (e) {}
+    userMarker = null;
+  }
 
   function placeUserMarker(lat, lng) {
     if (userMarker) userMarker.setLatLng([lat, lng]);
     else {
       userMarker = L.marker([lat, lng], {
         icon: L.divIcon({
-          className: '',
-          html: '<div class="user-dot"></div>',
-          iconSize: [14, 14],
-          iconAnchor: [7, 7]
+          className: '', html: '<div class="user-dot"></div>',
+          iconSize: [14, 14], iconAnchor: [7, 7]
         })
       }).addTo(map);
     }
@@ -157,36 +173,42 @@
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
       const accuracy = Math.round(pos.coords.accuracy || 9999);
-      placeUserMarker(lat, lng);
 
-      if (!centeredOnFix) {
-        map.setView([lat, lng], 14, { animate: false });
-        centeredOnFix = true;
-      }
-
-      if (accuracy > 500) {
+      /* Approximate iOS location is informational only. It NEVER moves the map. */
+      if (accuracy > 250) {
         userPos = null;
-        if (geoStatus) geoStatus.textContent = `APPROXIMATE LOCATION // ±${accuracy} m`;
+        removeUserMarker();
+        if (geoStatus) geoStatus.textContent = `APPROXIMATE // ±${accuracy} m // MAP UNCHANGED`;
         if (!approximateNotified) {
-          toast('APPROXIMATE LOCATION // MAP WORKS; SIGNAL UNLOCKS STAY OFF');
+          toast('LOCATION TOO BROAD // KEEPING HINES MAP IN PLACE');
           approximateNotified = true;
         }
-      } else {
-        userPos = { lat, lng, accuracy };
-        if (geoStatus) geoStatus.textContent = `FIELD LINK ACTIVE // ±${accuracy} m`;
-        if (tracking) appendTrackPoint(userPos);
+        renderDeck();
+        renderMarkers();
+        return;
       }
 
+      userPos = { lat, lng, accuracy };
+      placeUserMarker(lat, lng);
+      if (geoStatus) geoStatus.textContent = `FIELD LINK ACTIVE // ±${accuracy} m`;
+
+      if (!centeredOnPreciseFix) {
+        map.setView([lat, lng], 14, { animate: false });
+        centeredOnPreciseFix = true;
+      }
+
+      if (tracking) appendTrackPoint(userPos);
       renderDeck();
       renderMarkers();
     }, err => {
       userPos = null;
+      removeUserMarker();
       if (geoStatus) geoStatus.textContent = 'LOCATION OPTIONAL // MAP READY';
       toast('LOCATION BLOCKED // DRIFT STILL WORKS WITHOUT IT');
       console.warn('DRIFT geolocation:', err?.message || err);
     }, {
       enableHighAccuracy: true,
-      maximumAge: 5000,
+      maximumAge: 3000,
       timeout: 12000
     });
   }
