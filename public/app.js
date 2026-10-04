@@ -139,7 +139,7 @@ function initMap(){
   landmarkLayer=L.layerGroup();
   municipalityLayer=L.layerGroup();
   routeLayer=L.layerGroup().addTo(map);
-  map.fitBounds(HINES_BOUNDS,{padding:[18,18]});
+  map.fitBounds(HINES_BOUNDS,{padding:[18,18],animate:false});
 
   renderLandmarks();renderMunicipalities();renderMarkers();renderSavedRoute();
   // Safari viewport and orientation changes must not leave blank map strips.
@@ -349,7 +349,7 @@ window.focusJP=id=>{const s=state.signals.find(x=>x.id===id);if(!s||s.lat==null)
 function showView(id,updateTabs=true){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
   if(updateTabs)document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===id));
-  if(id==='fieldView')setTimeout(()=>map.invalidateSize(),50);
+  if(id==='fieldView')map.invalidateSize({pan:false});
   if(id==='archiveView')renderArchive();if(id==='jpView')renderJP();if(id==='trailsView')renderTrailCollection();
 }
 
@@ -441,7 +441,7 @@ function toggleHelp(show){const m=document.getElementById('quickStart');m.hidden
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showView(t.dataset.view));
 document.getElementById('backBtn').onclick=()=>showView('fieldView');
 document.getElementById('locateBtn').onclick=()=>startLocation(true);
-document.getElementById('hinesHomeBtn').onclick=()=>{centerOnNextFix=false;map.closePopup();map.fitBounds(HINES_BOUNDS,{padding:[18,18]});document.getElementById('hinesPlaceSelect').value='';};
+document.getElementById('hinesHomeBtn').onclick=()=>{centerOnNextFix=false;map.closePopup();map.fitBounds(HINES_BOUNDS,{padding:[18,18],animate:false});document.getElementById('hinesPlaceSelect').value='';};
 document.getElementById('hinesPlaceSelect').onchange=e=>{
   const option=e.target.selectedOptions[0];
   if(!option?.dataset.lat||!option?.dataset.lng)return;
