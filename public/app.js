@@ -4,6 +4,8 @@ const ONBOARD_KEY='lr-drift-onboarded-v03';
 const START_HINT_KEY='lr-drift-start-hint-v04';
 const INTERCEPT_RADIUS=140;
 const DETECT_RADIUS=2500;
+const MAX_LOCATION_ACCURACY=250;
+const JP_ARCHIVE_KEY='lr-drift-jp-archive-v01';
 const HINES_BOUNDS=L.latLngBounds([42.300,-83.520],[42.455,-83.225]);
 
 const defaultSignals=[
@@ -71,6 +73,7 @@ let state=loadState();
 let userPos=null;
 let map, userMarker, signalLayer, landmarkLayer, municipalityLayer, routeLayer;
 let guidanceLine=null;
+let baseLayer,locationWatchId=null,centerOnNextFix=false;
 let tracking=false, trackStartedAt=null, trackPoints=[], trackDistanceM=0, trackTimer=null;
 const markers=new Map();
 
@@ -111,7 +114,7 @@ function bearingDeg(a,b){
 function cardinal(deg){const dirs=['N','NE','E','SE','S','SW','W','NW'];return dirs[Math.round(norm360(deg)/45)%8];}
 function signalState(sig){
   if(sig.lat==null) return {label:'UNASSIGNED',bars:'░░░░░',pct:0,d:null,unlocked:false};
-  if(!userPos) return {label:'DORMANT',bars:'░░░░░',pct:8,d:null,unlocked:false};
+  if(!reliableLocation(userPos)) return {label:'DORMANT',bars:'░░░░░',pct:8,d:null,unlocked:false};
   const d=distanceM(userPos,sig);
   if(d<=INTERCEPT_RADIUS) return {label:'INTERCEPT',bars:'█████',pct:100,d,unlocked:true};
   if(d<=450) return {label:'ACQUIRED',bars:'████░',pct:78,d,unlocked:false};
@@ -125,33 +128,53 @@ function fmtDuration(ms){const sec=Math.max(0,Math.floor(ms/1000)),m=Math.floor(
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.append(t);setTimeout(()=>t.remove(),2600);}
 
 function initMap(){
-  map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:19});
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  map=L.map('map',{zoomControl:false,attributionControl:true,minZoom:10,maxZoom:19}).setView([42.3775,-83.3725],12);
+  setMapStyle('minimal');
   signalLayer=L.layerGroup().addTo(map);
   landmarkLayer=L.layerGroup().addTo(map);
   municipalityLayer=L.layerGroup().addTo(map);
   routeLayer=L.layerGroup().addTo(map);
   map.fitBounds(HINES_BOUNDS,{padding:[18,18]});
 
-  const HomeControl=L.Control.extend({
-    options:{position:'topright'},
-    onAdd(){
-      const b=L.DomUtil.create('button','leaflet-bar hines-home');
-      b.type='button';b.title='Show Hines Park corridor';b.setAttribute('aria-label','Show Hines Park corridor');b.textContent='HINES';
-      L.DomEvent.disableClickPropagation(b);L.DomEvent.on(b,'click',()=>map.fitBounds(HINES_BOUNDS,{padding:[18,18]}));return b;
-    }
-  });
-  map.addControl(new HomeControl());
   renderLandmarks();renderMunicipalities();renderMarkers();renderSavedRoute();
+  // Safari viewport and orientation changes must not leave blank map strips.
+  new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.getElementById('map'));
+}
+function setMapStyle(style){
+  const minimal=style!=='standard';
+  if(baseLayer)map.removeLayer(baseLayer);
+  baseLayer=L.tileLayer(minimal?'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png':'https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,subdomains:'abcd',attribution:minimal?'© OpenStreetMap contributors © CARTO':'© OpenStreetMap contributors'
+  }).addTo(map);
+  document.querySelectorAll('.map-style').forEach(btn=>{
+    const active=btn.dataset.mapStyle===(minimal?'minimal':'standard');
+    btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
+  });
+}
+function bindLocationInfo(marker,html){
+  marker.bindPopup(html,{autoPan:false,maxWidth:240,className:'location-info'});
+  // Touch uses Leaflet's normal click-to-toggle; no synthetic hover on Safari.
+  if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    let closeTimer;
+    marker.on('mouseover',()=>{clearTimeout(closeTimer);marker.openPopup();});
+    marker.on('mouseout',()=>{closeTimer=setTimeout(()=>marker.closePopup(),250);});
+    marker.on('popupopen',()=>{
+      const popup=marker.getPopup().getElement();
+      popup.addEventListener('mouseenter',()=>clearTimeout(closeTimer));
+      popup.addEventListener('mouseleave',()=>marker.closePopup());
+    });
+  }
 }
 function renderLandmarks(){
   landmarkLayer.clearLayers();
   landmarks.forEach(lm=>{
+    // A signal already represents these coordinates; don't stack two tap targets.
+    if(state.signals.some(s=>!s.jp&&s.lat!=null&&distanceM(s,lm)<5))return;
     const sensitive=!!lm.sensitive;
     const symbol=sensitive?'✦':lm.kind==='WATER'?'≈':lm.kind==='HISTORY'?'◇':'○';
     const html=`<div class="landmark-dot ${sensitive?'sensitive':''}">${symbol}</div>`;
     const m=L.marker([lm.lat,lm.lng],{icon:L.divIcon({className:'',html,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(landmarkLayer);
-    m.bindPopup(`<div class="map-popup"><div class="eyebrow">${esc(lm.kind)}${sensitive?' // SENSITIVE':''}</div><strong>${esc(lm.name)}</strong><p>${esc(lm.note)}</p></div>`);
+    bindLocationInfo(m,`<div class="map-popup"><div class="eyebrow">${esc(lm.kind)}${sensitive?' // SENSITIVE':''}</div><strong>${esc(lm.name)}</strong><p>${esc(lm.note)}</p></div>`);
   });
 }
 function renderMunicipalities(){
@@ -164,16 +187,8 @@ function renderMarkers(){
     const st=signalState(sig);
     const html=`<div class="signal-dot ${sig.jp?'jp':''} ${st.unlocked?'unlocked':''}"></div>`;
     const marker=L.marker([sig.lat,sig.lng],{icon:L.divIcon({className:'',html,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(signalLayer);
-    marker.on('click',()=>openSignal(sig.id));markers.set(sig.id,marker);
-  });
-}
-function renderDeck(){
-  const deck=document.getElementById('signalDeck');deck.innerHTML='';
-  state.signals.forEach(sig=>{
-    const st=signalState(sig),btn=document.createElement('button');
-    btn.className=`signal-card ${st.label==='INTERCEPT'?'live':''}`;
-    btn.innerHTML=`<div class="row"><div><div class="eyebrow">${esc(sig.code)}</div><h3>${esc(sig.name)}</h3></div><div class="strength">${st.d!=null?fmtDistance(st.d):st.label}</div></div><p>${st.unlocked?'Signal acquired':esc(sig.region)}</p>`;
-    btn.onclick=()=>openSignal(sig.id);deck.append(btn);
+    bindLocationInfo(marker,`<div class="map-popup"><div class="eyebrow">${esc(sig.code)} // ${esc(st.label)}</div><strong>${esc(sig.name)}</strong><p>${esc(sig.region)}</p><button type="button" class="popup-details" data-signal="${esc(sig.id)}">SIGNAL DETAILS →</button></div>`);
+    markers.set(sig.id,marker);
   });
 }
 
@@ -260,9 +275,9 @@ function openSignal(id){
 function focusSignalOnMap(sig){
   showView('fieldView');
   if(guidanceLine){map.removeLayer(guidanceLine);guidanceLine=null;}
-  if(userPos){
+  if(reliableLocation(userPos)&&distanceM(userPos,sig)<=8000){
     guidanceLine=L.polyline([[userPos.lat,userPos.lng],[sig.lat,sig.lng]],{weight:2,dashArray:'5,7',opacity:.8}).addTo(map);
-    map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[sig.lat,sig.lng]]),{padding:[55,55]});
+    map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[sig.lat,sig.lng]]),{padding:[55,55],maxZoom:16});
   }else map.setView([sig.lat,sig.lng],15);
   markers.get(sig.id)?.openPopup?.();
 }
@@ -287,22 +302,46 @@ function showView(id,updateTabs=true){
   if(id==='archiveView')renderArchive();if(id==='jpView')renderJP();
 }
 
-function startLocation(){
+function reliableLocation(pos){
+  return !!pos&&Number.isFinite(pos.lat)&&Number.isFinite(pos.lng)&&Math.abs(pos.lat)<=90&&Math.abs(pos.lng)<=180&&Number.isFinite(pos.accuracy)&&pos.accuracy>0&&pos.accuracy<=MAX_LOCATION_ACCURACY;
+}
+function clearLocation(){
+  userPos=null;
+  if(userMarker){map.removeLayer(userMarker);userMarker=null;}
+  if(guidanceLine){map.removeLayer(guidanceLine);guidanceLine=null;}
+}
+function acceptLocation(pos){
+  const fix={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
+  if(!reliableLocation(fix)){
+    clearLocation();
+    document.getElementById('geoStatus').textContent='APPROXIMATE // MAP UNCHANGED';
+    renderMarkers();return;
+  }
+  userPos=fix;
+  document.getElementById('geoStatus').textContent=`FIELD LINK ACTIVE // ±${Math.round(fix.accuracy)} m`;
+  if(userMarker)userMarker.setLatLng([fix.lat,fix.lng]);
+  else userMarker=L.marker([fix.lat,fix.lng],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(map);
+  if(centerOnNextFix){map.setView([fix.lat,fix.lng],14);centerOnNextFix=false;}
+  if(tracking)appendTrackPoint(fix);
+  renderMarkers();
+}
+function startLocation(recenter=false){
   if(!navigator.geolocation){toast('Geolocation unavailable');return;}
+  centerOnNextFix=recenter;
+  if(recenter&&reliableLocation(userPos)){map.setView([userPos.lat,userPos.lng],14);centerOnNextFix=false;}
+  if(locationWatchId!==null)return;
   document.getElementById('geoStatus').textContent='ACQUIRING LOCATION';
-  navigator.geolocation.watchPosition(pos=>{
-    userPos={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
-    document.getElementById('geoStatus').textContent=`FIELD LINK ACTIVE // ±${Math.round(pos.coords.accuracy)} m`;
-    if(userMarker)userMarker.setLatLng([userPos.lat,userPos.lng]);
-    else userMarker=L.marker([userPos.lat,userPos.lng],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(map);
-    if(tracking)appendTrackPoint(userPos);
-    renderDeck();renderMarkers();
-    const qs=new URLSearchParams(location.search).get('signal');if(qs&&!document.body.dataset.deepOpened){document.body.dataset.deepOpened='1';openSignal(qs);}
-  },err=>{document.getElementById('geoStatus').textContent='LOCATION BLOCKED';toast(err.message);},{enableHighAccuracy:true,maximumAge:4000,timeout:12000});
+  locationWatchId=navigator.geolocation.watchPosition(acceptLocation,err=>{
+    clearLocation();centerOnNextFix=false;
+    if(locationWatchId!==null)navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId=null;
+    document.getElementById('geoStatus').textContent=err.code===1?'LOCATION BLOCKED':'LOCATION UNAVAILABLE';
+    renderMarkers();toast('LOCATION UNAVAILABLE // HINES MAP STILL WORKS');
+  },{enableHighAccuracy:true,maximumAge:4000,timeout:12000});
 }
 
 function appendTrackPoint(pos){
-  if(pos.accuracy>100)return;
+  if(!reliableLocation(pos)||pos.accuracy>100)return;
   const p={lat:pos.lat,lng:pos.lng,t:Date.now()};
   const last=trackPoints[trackPoints.length-1];
   if(last){const d=distanceM(last,p);if(d<3)return;trackDistanceM+=d;}
@@ -322,7 +361,9 @@ function updateTracker(){
 }
 function startTracking(){
   if(tracking)return;
+  startLocation(false);
   tracking=true;trackStartedAt=Date.now();trackPoints=[];trackDistanceM=0;routeLayer.clearLayers();
+  document.getElementById('tracker').classList.add('is-tracking');
   document.getElementById('trackStatus').textContent='RECORDING';document.getElementById('trackStartBtn').disabled=true;document.getElementById('trackStopBtn').disabled=false;
   if(userPos)appendTrackPoint(userPos);
   trackTimer=setInterval(updateTracker,1000);updateTracker();toast('BREADCRUMB PATH RECORDING');
@@ -340,6 +381,7 @@ function stopTracking(){
 function clearTrack(){
   if(tracking){toast('STOP THE CURRENT DRIFT FIRST');return;}
   trackPoints=[];trackDistanceM=0;trackStartedAt=null;routeLayer.clearLayers();document.getElementById('trackStatus').textContent='READY';updateTracker();
+  document.getElementById('tracker').classList.remove('is-tracking');
 }
 
 function setLayerButton(btn,on){btn.classList.toggle('active',on);}
@@ -347,7 +389,19 @@ function toggleHelp(show){const m=document.getElementById('quickStart');m.hidden
 
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showView(t.dataset.view));
 document.getElementById('backBtn').onclick=()=>showView('fieldView');
-document.getElementById('locateBtn').onclick=()=>{startLocation();if(userPos)map.setView([userPos.lat,userPos.lng],14);};
+document.getElementById('locateBtn').onclick=()=>startLocation(true);
+document.getElementById('hinesHomeBtn').onclick=()=>{centerOnNextFix=false;map.closePopup();map.fitBounds(HINES_BOUNDS,{padding:[18,18]});document.getElementById('hinesPlaceSelect').value='';};
+document.getElementById('hinesPlaceSelect').onchange=e=>{
+  const option=e.target.selectedOptions[0];
+  if(!option?.dataset.lat||!option?.dataset.lng)return;
+  centerOnNextFix=false;map.closePopup();map.setView([Number(option.dataset.lat),Number(option.dataset.lng)],14);
+  e.target.blur();e.target.value='';
+};
+document.querySelectorAll('.map-style').forEach(btn=>btn.onclick=()=>setMapStyle(btn.dataset.mapStyle));
+document.getElementById('map').addEventListener('click',e=>{
+  const button=e.target.closest('[data-signal]');
+  if(button){e.preventDefault();e.stopPropagation();openSignal(button.dataset.signal);}
+});
 document.getElementById('helpBtn').onclick=()=>toggleHelp(true);
 document.getElementById('closeHelpBtn').onclick=()=>toggleHelp(false);
 document.getElementById('gotItBtn').onclick=()=>{localStorage.setItem(ONBOARD_KEY,'1');toggleHelp(false);};
@@ -371,11 +425,191 @@ document.getElementById('jpForm').addEventListener('submit',e=>{
   const lat=parseFloat(document.getElementById('jpLat').value),lng=parseFloat(document.getElementById('jpLng').value);
   if(!Number.isFinite(lat)||!Number.isFinite(lng))return toast('Coordinates are being humans again. Check them.');
   s.name=document.getElementById('jpName').value.trim();s.lat=lat;s.lng=lng;s.region='HINES PARK // JP PICK';s.status='ACTIVE';s.transmission='JP FIELD TRANSMISSION';s.clue=document.getElementById('jpClue').value.trim()||'JP field point acquired.';
-  saveState();renderJP();renderDeck();renderMarkers();e.target.reset();toast(`${s.code} ASSIGNED`);
+  saveState();renderJP();renderMarkers();e.target.reset();toast(`${s.code} ASSIGNED`);
 });
 
-initMap();renderDeck();renderArchive();renderJP();
+archiveAndRemoveJP();
+initMap();renderArchive();renderJP();
 const incomingSignal=new URLSearchParams(location.search).get('signal');if(incomingSignal)openSignal(incomingSignal);
-startLocation();
-if(!localStorage.getItem(ONBOARD_KEY))setTimeout(()=>toggleHelp(true),350);
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+// No automatic location permission or blocking onboarding modal on page load.
+if('serviceWorker' in navigator)window.addEventListener('load',()=>{
+  let refreshing=false;
+  const wasControlled=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(tracking){toast('UPDATE READY // RELOAD AFTER SAVING YOUR DRIFT');return;}
+    if(wasControlled&&!refreshing){refreshing=true;location.reload();}
+  });
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+});
+
+// Shared field services are part of the canonical app, not a UI patch.
+
+  function archiveAndRemoveJP(){
+    if(typeof state==='undefined'||!Array.isArray(state.signals))return;
+    const jp=state.signals.filter(s=>s.jp);
+    if(jp.length){
+      try{
+        const existing=localStorage.getItem(JP_ARCHIVE_KEY);
+        if(!existing)localStorage.setItem(JP_ARCHIVE_KEY,JSON.stringify({archivedAt:new Date().toISOString(),signals:jp}));
+      }catch{}
+      state.signals=state.signals.filter(s=>!s.jp);
+    }
+    const legacy=document.getElementById('jpView');
+    if(legacy){legacy.hidden=true;legacy.setAttribute('aria-hidden','true');}
+    document.querySelectorAll('.tab[data-view="jpView"]').forEach(el=>el.remove());
+
+  }
+
+  function correctDirectoryLinks(){
+    document.querySelectorAll('.directory-links a').forEach(link=>{
+      if(link.textContent.trim()==='nøfuture')link.href='https://nøfuture.com';
+    });
+  }
+
+  function currentSignal(){
+    const detail=document.querySelector('#signalDetail .detail-id');
+    if(!detail||typeof state==='undefined')return null;
+    const code=detail.textContent.split('//')[0].trim();
+    return state.signals.find(s=>s.code===code)||null;
+  }
+
+  function localLog(signal){
+    state.intercepts[signal.id]={time:new Date().toISOString(),name:signal.name};
+    saveState();
+    renderArchive();
+  }
+
+  function ensureDialog(){
+    let dialog=document.getElementById('sharedInterceptDialog');
+    if(dialog)return dialog;
+    dialog=document.createElement('dialog');
+    dialog.id='sharedInterceptDialog';
+    dialog.className='shared-dialog';
+    dialog.innerHTML=`
+      <form method="dialog" class="shared-card" id="sharedInterceptForm">
+        <button class="shared-close" value="cancel" aria-label="Close">×</button>
+        <div class="eyebrow">FIELD TRANSMISSION</div>
+        <h2>LOG INTERCEPT</h2>
+        <p class="shared-privacy-note">Your live location is sent only to verify that you are within the signal radius. Exact coordinates are not stored with the intercept.</p>
+        <input type="hidden" id="sharedSignalId" />
+        <label>FIELD NAME <span>optional</span><input id="sharedAlias" maxlength="40" autocomplete="nickname" placeholder="anonymous is fine" /></label>
+        <label>FIELD NOTE <span>optional</span><textarea id="sharedNote" maxlength="500" rows="4" placeholder="What did you notice?"></textarea></label>
+        <label>PHOTO <span>optional</span><input id="sharedPhoto" type="file" accept="image/*" capture="environment" /></label>
+        <label class="share-check"><input id="sharedPublic" type="checkbox" /> <span>SHOW THIS INTERCEPT IN THE PUBLIC ACTIVITY LOG</span></label>
+        <div class="shared-actions">
+          <button type="button" class="primary" id="sharedSubmit">TRANSMIT INTERCEPT</button>
+          <button value="cancel" class="secondary">CANCEL</button>
+        </div>
+      </form>`;
+    document.body.append(dialog);
+    document.getElementById('sharedSubmit').addEventListener('click',submitSharedIntercept);
+    return dialog;
+  }
+
+  function openSharedDialog(signal){
+    const dialog=ensureDialog();
+    document.getElementById('sharedSignalId').value=signal.id;
+    document.getElementById('sharedAlias').value='';
+    document.getElementById('sharedNote').value='';
+    document.getElementById('sharedPhoto').value='';
+    document.getElementById('sharedPublic').checked=false;
+    dialog.showModal();
+  }
+
+  async function submitSharedIntercept(){
+    const dialog=document.getElementById('sharedInterceptDialog');
+    const id=document.getElementById('sharedSignalId').value;
+    const signal=state.signals.find(s=>s.id===id);
+    if(!signal)return;
+    const button=document.getElementById('sharedSubmit');
+    button.disabled=true;button.textContent='TRANSMITTING…';
+
+    const payload={
+      signal_id:id,
+      alias:document.getElementById('sharedAlias').value,
+      note:document.getElementById('sharedNote').value,
+      public:document.getElementById('sharedPublic').checked,
+      lat:userPos?.lat,
+      lng:userPos?.lng
+    };
+
+    try{
+      if(!userPos)throw new Error('live_location_required');
+      const response=await fetch('/api/intercepts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(data.error||`HTTP ${response.status}`);
+
+      const photo=document.getElementById('sharedPhoto').files?.[0];
+      if(photo&&data.id){
+        const photoResponse=await fetch(`/api/intercepts/${encodeURIComponent(data.id)}/photo`,{method:'POST',headers:{'content-type':photo.type||'image/jpeg'},body:photo});
+        if(!photoResponse.ok)toast('INTERCEPT SAVED // PHOTO COULD NOT UPLOAD');
+      }
+
+      localLog(signal);
+      dialog.close();
+      openSignal(signal.id);
+      toast(payload.public?'INTERCEPT TRANSMITTED TO DRIFT':'PRIVATE INTERCEPT SAVED');
+      loadSharedActivity();
+    }catch(error){
+      localLog(signal);
+      dialog.close();
+      openSignal(signal.id);
+      const reason=String(error?.message||'');
+      if(reason==='outside_intercept_radius')toast('OUTSIDE INTERCEPT RADIUS // SAVED ON DEVICE ONLY');
+      else if(reason==='live_location_required')toast('LOCATION REQUIRED FOR SHARED LOG // SAVED ON DEVICE');
+      else toast('SHARED LOG OFFLINE // SAVED ON DEVICE');
+    }finally{
+      button.disabled=false;button.textContent='TRANSMIT INTERCEPT';
+    }
+  }
+
+  async function loadSharedActivity(){
+    const target=document.getElementById('sharedActivity');
+    if(!target)return;
+    try{
+      const response=await fetch('/api/intercepts?limit=12',{headers:{accept:'application/json'}});
+      if(!response.ok)throw new Error();
+      const data=await response.json();
+      const rows=Array.isArray(data.intercepts)?data.intercepts:[];
+      target.innerHTML=rows.length?rows.map(row=>`
+        <article class="shared-activity-item">
+          <div class="meta">${esc(new Date(row.created_at).toLocaleString())} // ${esc(row.code||row.signal_id)}</div>
+          <h3>${esc(row.name||row.signal_id)}</h3>
+          <div class="shared-alias">${esc(row.alias||'ANONYMOUS FIELD UNIT')}</div>
+          ${row.note?`<p>${esc(row.note)}</p>`:''}
+          ${row.photo_key?'<span class="tag">PHOTO ATTACHED</span>':''}
+        </article>`).join(''):'<div class="lockbox">NO PUBLIC INTERCEPTS YET</div>';
+    }catch{
+      target.innerHTML='<div class="lockbox">SHARED FIELD LOG OFFLINE // LOCAL ARCHIVE STILL WORKS</div>';
+    }
+  }
+
+  async function updateBackendStatus(){
+    const status=document.getElementById('backendStatus');
+    if(!status)return;
+    try{
+      const response=await fetch('/api/health',{headers:{accept:'application/json'}});
+      const data=await response.json();
+      const db=data.database?'D1 ONLINE':'D1 PROVISIONING';
+      const photos=data.photos?'R2 ONLINE':'R2 PROVISIONING';
+      status.textContent=`${db} // ${photos}`;
+      status.classList.toggle('online',!!data.database);
+    }catch{
+      status.textContent='SHARED SERVICES OFFLINE // DEVICE MODE ACTIVE';
+    }
+  }
+
+  document.addEventListener('click',event=>{
+    const log=event.target.closest?.('#logBtn');
+    if(!log)return;
+    const signal=currentSignal();
+    if(!signal)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openSharedDialog(signal);
+  },true);
+
+  correctDirectoryLinks();
+  loadSharedActivity();
+  updateBackendStatus();
+  window.addEventListener('online',()=>{loadSharedActivity();updateBackendStatus();});

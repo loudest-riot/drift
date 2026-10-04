@@ -10,27 +10,23 @@
   <title>DRIFT // Loudest Riot Sounds</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
-  <link rel="preconnect" href="https://raw.githubusercontent.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="brand.css" />
-  <link rel="stylesheet" href="proper.css" />
-  <link rel="stylesheet" href="modern.css" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
-<body>
+<body data-release="14">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
       <div class="brand-lockup">
-        <img class="brand-glyph" src="icons/signal-glyph-192.png" alt="" aria-hidden="true" />
         <div class="brand-copy">
-          <img class="drift-wordmark" src="https://raw.githubusercontent.com/loudest-riot/drift/main/drift-logo-light.png" alt="DRIFT" />
+          <img class="drift-wordmark" src="assets/drift-logo-light.png" alt="DRIFT" />
           <div class="brand-expansion">DISTRIBUTED RELAYS IN FIELD TERRAIN</div>
           <div class="brand-imprint">LOUDEST RIOT SOUNDS</div>
         </div>
       </div>
     </a>
     <div class="top-actions">
+      <a class="signal-link" href="https://go.loudestriot.com" aria-label="Open Loudest Riot signal portal"><img src="icons/signal-glyph-180.png" alt="" aria-hidden="true" /></a>
       <button id="helpBtn" class="icon-btn" type="button" aria-label="Quick start">?</button>
       <button id="locateBtn" class="icon-btn" type="button" aria-label="Use my location">◎</button>
     </div>
@@ -40,9 +36,29 @@
     <section id="fieldView" class="view active">
       <div id="map" aria-label="DRIFT Hines Park map"></div>
       <div class="map-shade"></div>
+      <div class="hines-controls" aria-label="Hines Park navigation">
+        <button id="hinesHomeBtn" class="hines-control" type="button">HINES</button>
+        <select id="hinesPlaceSelect" class="hines-control" aria-label="Choose a Hines Park place">
+          <option value="">HINES PLACES ▾</option>
+          <option value="cass-benton" data-lat="42.41545" data-lng="-83.4766">CASS BENTON</option>
+          <option value="wilcox-lake" data-lat="42.38436" data-lng="-83.45971">WILCOX LAKE</option>
+          <option value="york-cemetery" data-lat="42.3811029" data-lng="-83.4574955">OLD VILLAGE / YORK STREET CEMETERY</option>
+          <option value="riverside" data-lat="42.37225" data-lng="-83.452708">RIVERSIDE CEMETERY</option>
+          <option value="nankin-mills" data-lat="42.348981" data-lng="-83.369991">NANKIN MILLS</option>
+          <option value="tonquish" data-lat="42.351151" data-lng="-83.38575">CHIEF TONQUISH BURIAL SITE MARKER</option>
+          <option value="middlebelt" data-lat="42.3451" data-lng="-83.3246">DEAD MAN'S HILL / MIDDLEBELT HILL</option>
+          <option value="boy-scout" data-lat="42.34413" data-lng="-83.271">BOY SCOUT SHELTER</option>
+          <option value="newburgh" data-lat="42.36733" data-lng="-83.42335">NEWBURGH POINTE</option>
+          <option value="helms" data-lat="42.3402" data-lng="-83.2638">HELMS HAVEN</option>
+        </select>
+      </div>
       <div class="map-head">
         <div class="eyebrow">HINES PARK</div>
         <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION DORMANT</span></div>
+        <div class="layer-chips" aria-label="Map style">
+          <button class="chip map-style active" data-map-style="minimal" type="button" aria-pressed="true">MINIMAL</button>
+          <button class="chip map-style" data-map-style="standard" type="button" aria-pressed="false">STANDARD</button>
+        </div>
         <div class="layer-chips" aria-label="Map layers">
           <button id="landmarksToggle" class="chip active" type="button">LANDMARKS</button>
           <button id="citiesToggle" class="chip active" type="button">CITIES</button>
@@ -51,8 +67,8 @@
 
       <aside id="startHint" class="start-hint" aria-label="How to start">
         <div class="eyebrow">START HERE</div>
-        <strong>Find a signal. Go toward it. See what you intercept.</strong>
-        <p>Use ◎ for your location, then tap any nearby signal.</p>
+        <strong>Choose a Hines place. Tap a marker for details.</strong>
+        <p>Location is optional. Approximate fixes never move the map.</p>
         <button id="dismissStartHint" type="button">GOT IT</button>
       </aside>
 
@@ -71,7 +87,6 @@
         </div>
       </aside>
 
-      <div id="signalDeck" class="signal-deck" aria-live="polite"></div>
     </section>
 
     <section id="archiveView" class="view">
@@ -171,7 +186,8 @@
       </div>
       <div class="quick-list">
         <p><strong>DRIFT turns Hines Park into a field of hidden transmissions.</strong></p>
-        <p>Pick a signal. Follow the map, a written clue, or the sky. When you get close, the transmission unlocks.</p>
+        <p>Choose HINES PLACES to explore. Hover a marker, or tap it on your phone, for details. Signal details include written clues and sky guidance.</p>
+        <p>Tap ◎ only when you want location. Approximate location never recenters the map. The Signal glyph opens go.loudestriot.com.</p>
         <p>Your path and intercepts can stay on your device. Sharing is optional.</p>
       </div>
       <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
@@ -180,7 +196,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js"></script>
-  <script src="proper-app.js"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>

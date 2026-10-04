@@ -1,28 +1,33 @@
-const CACHE='drift-v12';
-const CORE=['./','./index.html','./styles.css','./brand.css','./proper.css','./landscape.css','./modern.css','./app.js','./proper-app.js','./privacy.html','./contact.html','./field-log.html','./field-log.js','./manifest.webmanifest','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  const url=new URL(e.request.url);
-  if(url.pathname.startsWith('/api/'))return;
-  const networkFirst=url.origin===self.location.origin&&(
-    url.pathname.endsWith('/')||
-    url.pathname.endsWith('/index.html')||
-    url.pathname.endsWith('/app.js')||
-    url.pathname.endsWith('/proper-app.js')||
-    url.pathname.endsWith('/styles.css')||
-    url.pathname.endsWith('/brand.css')||
-    url.pathname.endsWith('/proper.css')||
-    url.pathname.endsWith('/landscape.css')||
-    url.pathname.endsWith('/privacy.html')||
-    url.pathname.endsWith('/contact.html')||
-    url.pathname.endsWith('/field-log.html')||
-    url.pathname.endsWith('/field-log.js')
-  );
-  if(networkFirst){
-    e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;}).catch(()=>caches.match(e.request).then(hit=>hit||caches.match('./index.html'))));
+// Release 14: app code is network-first; only static images are cache-first.
+const CACHE='drift-v14';
+const LEAFLET=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'];
+const CORE=['./','./index.html','./styles.css?v=14','./app.js?v=14','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('drift-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',event=>{
+  const request=event.request,url=new URL(request.url);
+  if(request.method!=='GET'||(url.origin!==self.location.origin&&!LEAFLET.includes(url.href))||url.pathname.startsWith('/api/'))return;
+  const appCode=request.mode==='navigate'||/\.(?:html|js|css|webmanifest)$/.test(url.pathname);
+  if(appCode){
+    event.respondWith(fetch(request,{cache:'no-cache'}).then(response=>{
+      if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}
+      return response;
+    }).catch(async()=>{
+      const cached=await caches.match(request);
+      if(cached)return cached;
+      if(request.mode==='navigate')return (await caches.match('./index.html'))||Response.error();
+      return Response.error();
+    }));
     return;
   }
-  e.respondWith(caches.match(e.request).then(hit=>hit||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;}).catch(()=>caches.match('./index.html'))));
+  if(/\.(?:png|jpg|jpeg|svg|webp|ico)$/.test(url.pathname)){
+    event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{
+      if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}
+      return response;
+    })));
+  }
 });
