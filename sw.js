@@ -1,4 +1,4 @@
-const CACHE='drift-v08';
+const CACHE='drift-v09';
 const CORE=['./','./index.html','./styles.css','./landscape.css','./ui.css','./app.js','./map-init-fix.js','./ui-fix.js','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png'];
 
 self.addEventListener('install',e=>{
@@ -18,8 +18,6 @@ self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET')return;
   const url=new URL(e.request.url);
 
-  /* Navigation and same-origin code prefer the network so GitHub/Cloudflare
-     deployments actually appear without ritual cache exorcisms. */
   const appCode=url.origin===self.location.origin && (
     e.request.mode==='navigate' || /\.(?:html|js|css|webmanifest)$/.test(url.pathname)
   );
