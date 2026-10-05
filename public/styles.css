@@ -171,3 +171,18 @@ button.hines-control{cursor:pointer;text-align:center}select.hines-control{paddi
 
 /* Standalone feature guide uses the shared app stylesheet. */
 body.features-page{display:block;max-width:none;width:auto;height:auto;min-height:100dvh;overflow:auto;background:#f3f3ef;color:#171a18}.features-page .privacy-wrap{height:auto;max-width:720px;margin:0 auto;padding:24px max(20px,env(safe-area-inset-right)) 40px max(20px,env(safe-area-inset-left));color:#171a18}.features-page h1{font-size:34px;letter-spacing:-.03em}.features-page .eyebrow{color:#626b62}.features-page .privacy-back{color:#344d36}.features-page p{font-size:16px;line-height:1.65;color:#515b51}.features-page .feature-intro{font-size:22px;line-height:1.35;color:#171a18}.feature-section{padding:18px 0;border-top:1px solid #dddeda}.features-page h2{font-size:19px;letter-spacing:.02em;color:#171a18}.features-page a{color:#344d36;text-underline-offset:3px}.feature-footer{display:flex;flex-wrap:wrap;gap:12px}.feature-footer a{min-height:44px;display:flex;align-items:center}
+
+/* Shared action sizing and states across map, routes, and dialogs. */
+:root{--action-radius:12px;--action-height:44px}
+button{cursor:pointer}button:disabled{cursor:default;opacity:.45}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #b5d12d;outline-offset:3px}
+.primary,.secondary,.mini-primary,.track-actions button,.popup-details,.nav-mode,.trail-actions button,.trail-actions a,.back-btn,.start-hint button{min-height:var(--action-height);border-radius:var(--action-radius);font-size:11px;font-weight:700;letter-spacing:.02em}
+.chip{min-height:var(--action-height);font-size:10px;font-weight:700;border-radius:var(--action-radius)}
+.map-overlays summary{min-height:var(--action-height);font-size:10px;font-weight:700}
+.top-actions #helpBtn,.top-actions #locateBtn{width:auto;min-width:52px;padding:0 8px;border-radius:var(--action-radius);font-size:10px;font-weight:700}
+.track-actions{flex-wrap:wrap}.track-actions button{flex:1}
+.quick-list p,.start-steps li{font-size:14px;line-height:1.55;color:var(--muted)}
+.quick-list p strong,.start-steps strong{color:var(--ink)}
+.start-steps{padding-left:22px}.start-steps li{padding:7px 0}
+.modal-card{border-radius:16px}.modal-head h2{line-height:1.2}
+@media(orientation:landscape) and (max-height:600px){.top-actions #helpBtn,.top-actions #locateBtn{min-height:44px;height:44px}}

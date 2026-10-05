@@ -27,9 +27,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css?v=17" />
+  <link rel="stylesheet" href="styles.css?v=18" />
 </head>
-<body data-release="17">
+<body data-release="18">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
@@ -43,8 +43,8 @@
     </a>
     <div class="top-actions">
       <a class="signal-link" href="https://go.loudestriot.com" aria-label="Open Loudest Riot signal portal"><img src="icons/signal-glyph-180.png" alt="" aria-hidden="true" /></a>
-      <button id="helpBtn" class="icon-btn" type="button" aria-label="Quick start">?</button>
-      <button id="locateBtn" class="icon-btn" type="button" aria-label="Use my location">◎</button>
+      <button id="helpBtn" class="icon-btn" type="button" aria-label="How to use DRIFT">HELP</button>
+      <button id="locateBtn" class="icon-btn" type="button" aria-label="Use my location">LOCATE</button>
     </div>
   </header>
 
@@ -53,9 +53,9 @@
       <div id="map" aria-label="DRIFT Hines Park map"></div>
       <div class="map-shade"></div>
       <div class="hines-controls" aria-label="Hines Park navigation">
-        <button id="hinesHomeBtn" class="hines-control" type="button">HINES</button>
+        <button id="hinesHomeBtn" class="hines-control" type="button">RESET MAP</button>
         <select id="hinesPlaceSelect" class="hines-control" aria-label="Choose a Hines Park place">
-          <option value="">HINES PLACES ▾</option>
+          <option value="">PLACES ▾</option>
           <option value="cass-benton" data-lat="42.41545" data-lng="-83.4766">CASS BENTON</option>
           <option value="wilcox-lake" data-lat="42.38436" data-lng="-83.45971">WILCOX LAKE</option>
           <option value="york-cemetery" data-lat="42.3811029" data-lng="-83.4574955">OLD VILLAGE / YORK STREET CEMETERY</option>
@@ -70,17 +70,17 @@
       </div>
       <div class="map-head">
         <div class="eyebrow">HINES PARK</div>
-        <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION DORMANT</span></div>
+        <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION OFF</span></div>
         <div class="layer-chips" aria-label="Map style">
-          <button class="chip map-style active" data-map-style="minimal" type="button" aria-pressed="true">MINIMAL</button>
-          <button class="chip map-style" data-map-style="standard" type="button" aria-pressed="false">STANDARD</button>
+          <button class="chip map-style active" data-map-style="minimal" type="button" aria-pressed="true">TRAILS ONLY</button>
+          <button class="chip map-style" data-map-style="standard" type="button" aria-pressed="false">STREET MAP</button>
         </div>
         <details class="map-overlays">
-          <summary>OVERLAYS</summary>
+          <summary>MAP LAYERS</summary>
           <div class="layer-chips" aria-label="Map layers">
-            <button id="mtbToggle" class="chip active" type="button" aria-pressed="true">MTB</button>
-            <button id="pavedToggle" class="chip active" type="button" aria-pressed="true">PAVED</button>
-            <button id="signalsToggle" class="chip" type="button" aria-pressed="false">SIGNALS</button>
+            <button id="mtbToggle" class="chip active" type="button" aria-pressed="true">BIKE TRAILS</button>
+            <button id="pavedToggle" class="chip active" type="button" aria-pressed="true">PAVED PATHS</button>
+            <button id="signalsToggle" class="chip" type="button" aria-pressed="false">FINDS</button>
             <button id="landmarksToggle" class="chip" type="button" aria-pressed="false">LANDMARKS</button>
             <button id="citiesToggle" class="chip" type="button" aria-pressed="false">CITIES</button>
           </div>
@@ -90,23 +90,23 @@
 
       <aside id="startHint" class="start-hint" aria-label="How to start">
         <div class="eyebrow">START HERE</div>
-        <strong>Tap a trail for details. Explore TRAILS to save your picks.</strong>
-        <p>Location is optional. Approximate fixes never move the map.</p>
+        <strong>Choose a trail, or turn on FINDS in MAP LAYERS to follow a clue.</strong>
+        <p>Browse without location. Tap LOCATE when you want to see where you are.</p>
         <button id="dismissStartHint" type="button">GOT IT</button>
       </aside>
 
       <aside id="tracker" class="tracker" aria-label="Walking path tracker">
         <div class="tracker-top">
           <div>
-            <div class="eyebrow">BREADCRUMB PATH</div>
+            <div class="eyebrow">ROUTE RECORDING</div>
             <strong id="trackStatus">READY</strong>
           </div>
-          <button id="trackStartBtn" class="mini-primary" type="button">START DRIFT</button>
+          <button id="trackStartBtn" class="mini-primary" type="button">RECORD ROUTE</button>
         </div>
         <div class="track-stats"><span id="trackDistance">0.00 MI</span><span id="trackTime">00:00</span></div>
         <div class="track-actions">
-          <button id="trackStopBtn" type="button" disabled>STOP + SAVE</button>
-          <button id="trackClearBtn" type="button">CLEAR</button>
+          <button id="trackStopBtn" type="button" disabled>SAVE ROUTE</button>
+          <button id="trackClearBtn" type="button">CLEAR ROUTE</button>
         </div>
       </aside>
 
@@ -129,16 +129,16 @@
     <section id="archiveView" class="view">
       <div class="section-head">
         <div class="eyebrow">PERSONAL ARCHIVE</div>
-        <h2>INTERCEPT LOG</h2>
-        <p class="lede">Your local intercepts and saved walks stay on this device. Shared intercepts appear separately below.</p>
+        <h2>YOUR FINDS + ROUTES</h2>
+        <p class="lede">Revisit the places you found and the routes you recorded. Your saved items stay on this device. Public discoveries appear separately below.</p>
       </div>
       <div id="archiveStats" class="stats"></div>
       <div id="archiveList" class="archive-list"></div>
-      <div class="section-head compact"><div class="eyebrow">SAVED DRIFTS</div></div>
+      <div class="section-head compact"><div class="eyebrow">SAVED ROUTES</div></div>
       <div id="routeList" class="archive-list"></div>
       <div class="section-head compact">
         <div class="eyebrow">SHARED FIELD LOG</div>
-        <h2>RECENT INTERCEPTS</h2>
+        <h2>SHARED FINDS</h2>
       </div>
       <div id="sharedActivity" class="shared-section"><div class="lockbox">ACQUIRING SHARED FIELD LOG…</div></div>
     </section>
@@ -146,8 +146,8 @@
     <section id="infoView" class="view">
       <div class="section-head">
         <div class="eyebrow">DRIFT // LOUDEST RIOT SOUNDS</div>
-        <h2>FIELD DIRECTORY</h2>
-        <p class="lede">Related transmissions, releases, project links, contact, and the boring-but-important data rules.</p>
+        <h2>ABOUT DRIFT</h2>
+        <p class="lede">A different way to explore Hines Park: follow your curiosity, discover music tied to a place, and notice more along the way.</p>
       </div>
       <div class="backend-card">
         <div class="eyebrow">SHARED SERVICES</div>
@@ -169,7 +169,7 @@
         </section>
 
         <section class="directory-group">
-          <h3>FIELD</h3>
+          <h3>EXPLORE</h3>
           <div class="directory-links">
             <a href="https://relay.loudestriot.com" target="_blank" rel="noreferrer">Relay Archive</a>
             <a class="internal" href="./">DRIFT Home</a>
@@ -217,32 +217,38 @@
     </section>
 
     <section id="signalView" class="view signal-view">
-      <button id="backBtn" class="back-btn" type="button">← FIELD</button>
+      <button id="backBtn" class="back-btn" type="button">← MAP</button>
       <div id="signalDetail"></div>
     </section>
   </main>
 
   <nav class="tabbar" aria-label="App navigation">
-    <button class="tab active" data-view="fieldView"><span>⌖</span>FIELD</button>
+    <button class="tab active" data-view="fieldView"><span>⌖</span>MAP</button>
     <button class="tab" data-view="trailsView"><span>⌁</span>TRAILS</button>
-    <button class="tab" data-view="archiveView"><span>▤</span>ARCHIVE</button>
-    <button class="tab" data-view="infoView"><span>⋯</span>INFO</button>
+    <button class="tab" data-view="archiveView"><span>▤</span>SAVED</button>
+    <button class="tab" data-view="infoView"><span>⋯</span>ABOUT</button>
   </nav>
 
   <div id="quickStart" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="quickStartTitle">
       <div class="signal-brand-stamp"><img src="icons/signal-glyph-192.png" alt="" aria-hidden="true" /><span>DRIFT // FIELD SIGNAL</span></div>
       <div class="modal-head">
-        <div><div class="eyebrow">DISTRIBUTED RELAYS IN FIELD TERRAIN</div><h2 id="quickStartTitle">DRIFT // QUICK START</h2></div>
+        <div><div class="eyebrow">DISTRIBUTED RELAYS IN FIELD TERRAIN</div><h2 id="quickStartTitle">A little adventure in Hines Park.</h2></div>
         <button id="closeHelpBtn" class="icon-btn" aria-label="Close quick start">×</button>
       </div>
       <div class="quick-list">
-        <p><strong>DRIFT turns Hines Park into a field of hidden transmissions.</strong></p>
-        <p>A psychogeocache combines geocaching’s search with psychogeography’s attention to place. In DRIFT, discover a transmission and notice what the surroundings make you feel. <button id="learnConceptBtn" class="inline-btn" type="button">WHAT IS A PSYCHOGEOCACHE? →</button></p>
-        <p>MINIMAL shows trails on a quiet background. STANDARD adds streets. Open TRAILS for rides and access points. Choose HINES PLACES to explore. Hover a marker, or tap it on your phone, for details. Signal details include written clues and sky guidance.</p>
-        <p><strong>LOOK FOR A DRIFT CARD.</strong> GPS gets you close to the field signal. When you find the physical card, hold the top of your phone almost against it for a second or two and scan its NFC chip. The scan opens the full transmission and confirms you found the right artifact. NFC is short range on purpose, so “right next to the phone” is normal. If nothing appears, move slowly across the card with the top edge of the phone.</p>
-        <p>Tap ◎ only when you want location. Approximate location never recenters the map. The Signal glyph opens go.loudestriot.com.</p>
-        <p>Your path and intercepts can stay on your device. Sharing is optional. <a href="features.html">Explore all DRIFT features →</a></p>
+        <p><strong>DRIFT is a map for curious walks and rides, with clues to music and creative finds around Hines Park.</strong></p>
+        <p>A <strong>drift</strong> is an outing led by curiosity: take a different turn, linger by the water, and notice the sounds, light, and details you usually pass.</p>
+        <p>Come for a new trail, a small treasure hunt, or a reason to get outside. Hear nøfuture’s place-linked sounds where the landscape becomes part of the experience. You can simply explore; recording your route is optional.</p>
+        <ol class="start-steps">
+          <li><strong>Pick somewhere to explore.</strong> Open TRAILS for routes and access points, or PLACES for a park landmark.</li>
+          <li><strong>Follow a clue.</strong> Turn on FINDS in MAP LAYERS, then tap a marker for its clue. LOCATE can show where you are.</li>
+          <li><strong>Discover the sound.</strong> Look for a DRIFT card at the find. Hold the top of your phone almost against its NFC chip, then tap the notification to open the linked transmission.</li>
+        </ol>
+        <p><strong>ENTER THE FIELD opens the map.</strong> RECORD ROUTE saves the path of your walk or ride to SAVED. Location is optional for browsing; recording and nearby-find checks need precise location.</p>
+        <p>Your routes and personal finds stay on this device. Sharing a find is optional.</p>
+        <button id="learnConceptBtn" class="inline-btn" type="button">WHY FOLLOW A CLUE? →</button>
+        <p><a href="features.html">Explore all DRIFT features →</a></p>
       </div>
       <div class="respect-note"><strong>FIELD RULE:</strong> stay on public land, obey closures, respect cemeteries and memorial sites, and never place a cache at a burial site or sensitive historic marker.</div>
       <button id="gotItBtn" class="primary" type="button">ENTER THE FIELD</button>
@@ -250,6 +256,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

@@ -193,7 +193,7 @@ function renderTrails(){
     style:feature=>({color:feature.properties.kind==='mtb'?'#344d36':'#899488',weight:feature.properties.kind==='mtb'?3:2,opacity:.9,dashArray:feature.properties.kind==='mtb'?null:'5 5'}),
     onEachFeature:(feature,line)=>{
       const p=feature.properties;
-      bindLocationInfo(line,`<div class="map-popup"><div class="eyebrow">${esc(p.kind.toUpperCase())} // ${esc(p.surface)}</div><strong>${esc(p.name)}</strong><button type="button" class="popup-details" data-trail="${esc(p.trailId)}">TRAIL COLLECTION →</button></div>`);
+      bindLocationInfo(line,`<div class="map-popup"><div class="eyebrow">${esc(p.kind.toUpperCase())} // ${esc(p.surface)}</div><strong>${esc(p.name)}</strong><button type="button" class="popup-details" data-trail="${esc(p.trailId)}">VIEW TRAIL →</button></div>`);
     }
   }).addTo(map);
 }
@@ -202,7 +202,7 @@ function renderTrailCollection(){
   const list=document.getElementById('trailCollection');
   const cards=trailData.trails.map(trail=>{
     const mapped=trailData.geometry.features.some(f=>f.properties.trailId===trail.id);
-    return {id:trail.id,html:`<article class="trail-card" id="trail-${esc(trail.id)}"><div class="eyebrow">${esc(trail.kind.toUpperCase())}${trail.miles?' // '+trail.miles+' MI':''}</div><h3>${esc(trail.name)}</h3><p>${esc(trail.note)}</p><div class="trail-actions">${mapped?`<button type="button" data-show-trail="${esc(trail.id)}">SHOW TRAIL</button>`:'<span class="trail-unmapped">Route not drawn</span>'}<a href="${esc(trail.source)}" target="_blank" rel="noreferrer">${mapped?'TRAIL GUIDE':'MAP + GUIDE'} ↗</a><button type="button" data-save-trail="${esc(trail.id)}" aria-pressed="${savedTrails.has(trail.id)}">${savedTrails.has(trail.id)?'SAVED ✓':'SAVE'}</button></div></article>`};
+    return {id:trail.id,html:`<article class="trail-card" id="trail-${esc(trail.id)}"><div class="eyebrow">${esc(trail.kind.toUpperCase())}${trail.miles?' // '+trail.miles+' MI':''}</div><h3>${esc(trail.name)}</h3><p>${esc(trail.note)}</p><div class="trail-actions">${mapped?`<button type="button" data-show-trail="${esc(trail.id)}">SHOW ON MAP</button>`:'<span class="trail-unmapped">Route not drawn</span>'}<a href="${esc(trail.source)}" target="_blank" rel="noreferrer">${mapped?'TRAIL GUIDE':'MAP + GUIDE'} ↗</a><button type="button" data-save-trail="${esc(trail.id)}" aria-pressed="${savedTrails.has(trail.id)}">${savedTrails.has(trail.id)?'SAVED ✓':'SAVE'}</button></div></article>`};
   }).concat(trailData.accessPoints.map(point=>({id:point.id,html:`<article class="trail-card"><div class="eyebrow">ACCESS POINT</div><h3>${esc(point.name)}</h3><p>${esc(point.address)}</p><p>${esc(point.note)}</p><div class="trail-actions"><a href="https://maps.apple.com/?q=${encodeURIComponent(point.address)}" target="_blank" rel="noreferrer">DIRECTIONS ↗</a><a href="${esc(point.source)}" target="_blank" rel="noreferrer">SOURCE ↗</a><button type="button" data-save-trail="${esc(point.id)}" aria-pressed="${savedTrails.has(point.id)}">${savedTrails.has(point.id)?'SAVED ✓':'SAVE'}</button></div></article>`})));
   list.innerHTML=cards.filter(card=>trailFilter==='all'||savedTrails.has(card.id)).map(card=>card.html).join('')||'<p class="lede">No saved picks yet. Choose ALL and save a trail or access point.</p>';
 }
@@ -236,7 +236,7 @@ function renderMarkers(){
     const st=signalState(sig);
     const html=`<div class="signal-dot ${sig.jp?'jp':''} ${st.unlocked?'unlocked':''}"></div>`;
     const marker=L.marker([sig.lat,sig.lng],{icon:L.divIcon({className:'',html,iconSize:[22,22],iconAnchor:[11,11]})}).addTo(signalLayer);
-    bindLocationInfo(marker,`<div class="map-popup"><div class="eyebrow">${esc(sig.code)} // ${esc(st.label)}</div><strong>${esc(sig.name)}</strong><p>${esc(sig.region)}</p><button type="button" class="popup-details" data-signal="${esc(sig.id)}">SIGNAL DETAILS →</button></div>`);
+    bindLocationInfo(marker,`<div class="map-popup"><div class="eyebrow">${esc(sig.code)} // ${esc(st.label)}</div><strong>${esc(sig.name)}</strong><p>${esc(sig.region)}</p><button type="button" class="popup-details" data-signal="${esc(sig.id)}">VIEW FIND →</button></div>`);
     markers.set(sig.id,marker);
   });
 }
@@ -265,7 +265,7 @@ function celestialGuide(sig){
 function celestialHTML(sig){
   const g=celestialGuide(sig);
   if(!g)return `<div class="nav-panel"><div class="eyebrow">CELESTIAL COURSE</div><p>Enable location to calculate a star-referenced course to this signal.</p></div>`;
-  if(!g.star)return `<div class="nav-panel"><div class="eyebrow">CELESTIAL COURSE</div><p>No guide star in the preset list is high enough right now. Use FIELD MAP or WRITTEN CLUE.</p></div>`;
+  if(!g.star)return `<div class="nav-panel"><div class="eyebrow">CELESTIAL COURSE</div><p>No guide star in the preset list is high enough right now. Use MAP or WRITTEN CLUE.</p></div>`;
   const s=g.star,delta=s.delta,turn=Math.abs(Math.round(delta)),side=delta>0?'RIGHT':'LEFT';
   const courseAngle=g.course,starAngle=s.az;
   const targetX=50+34*Math.sin(toRad(courseAngle)),targetY=50-34*Math.cos(toRad(courseAngle));
@@ -300,12 +300,12 @@ function openSignal(id){
     </div>
     ${sig.lat!=null?`<div class="nav-mode-tabs">
       <button class="nav-mode active" data-nav="celestial">CELESTIAL</button>
-      <button class="nav-mode" data-nav="map">FIELD MAP</button>
+      <button class="nav-mode" data-nav="map">MAP</button>
       <button class="nav-mode" data-nav="written">WRITTEN CLUE</button>
     </div>
     <div id="navContent">${celestialHTML(sig)}</div>`:''}
     ${sig.lat==null?`<div class="lockbox">JP PICK UNASSIGNED<br><small>Assign it in JP PICKS after the field decision.</small></div>`:
-      unlock?`<div class="transmission"><div class="eyebrow">TRANSMISSION ACQUIRED</div><h3>${esc(sig.transmission)}</h3><p>The field has verified proximity. Physical NFC/QR can point directly to <strong>?signal=${esc(sig.id)}</strong>.</p>${sig.link?`<a class="primary" href="${esc(sig.link)}" target="_blank" rel="noreferrer">OPEN TRANSMISSION ↗</a>`:''}<button class="primary" id="logBtn">${intercepted?'INTERCEPT LOGGED ✓':'LOG INTERCEPT'}</button></div>`:
+      unlock?`<div class="transmission"><div class="eyebrow">TRANSMISSION ACQUIRED</div><h3>${esc(sig.transmission)}</h3><p>You are close enough to save this find. If you find a DRIFT card, scan it to open its linked sound.</p>${sig.link?`<a class="primary" href="${esc(sig.link)}" target="_blank" rel="noreferrer">LISTEN ↗</a>`:''}<button class="primary" id="logBtn">${intercepted?'FIND SAVED ✓':'SAVE FIND'}</button></div>`:
       `<div class="lockbox">TRANSMISSION LOCKED<br><small>Move within ${INTERCEPT_RADIUS} m to acquire.</small></div>`}
   `;
   document.querySelectorAll('.nav-mode').forEach(btn=>btn.onclick=()=>{
@@ -314,7 +314,7 @@ function openSignal(id){
     if(btn.dataset.nav==='celestial')content.innerHTML=celestialHTML(sig);
     if(btn.dataset.nav==='written')content.innerHTML=`<div class="nav-panel"><div class="eyebrow">WRITTEN CLUE</div><p class="written-clue">${esc(sig.clue)}</p></div>`;
     if(btn.dataset.nav==='map'){
-      content.innerHTML=`<div class="nav-panel"><div class="eyebrow">FIELD MAP</div><p>Opening the real Hines map and drawing a straight reference line to the signal. Trails, closures and river crossings still win.</p><button class="primary" id="openMapBtn">OPEN FIELD MAP</button></div>`;
+      content.innerHTML=`<div class="nav-panel"><div class="eyebrow">MAP</div><p>Opening the real Hines map and drawing a straight reference line to the signal. Trails, closures and river crossings still win.</p><button class="primary" id="openMapBtn">OPEN MAP</button></div>`;
       document.getElementById('openMapBtn').onclick=()=>focusSignalOnMap(sig);
     }
   });
@@ -337,7 +337,7 @@ function renderArchive(){
   document.getElementById('archiveStats').innerHTML=`<div class="stat"><strong>${vals.length}</strong><span>INTERCEPTED</span></div><div class="stat"><strong>${assigned}</strong><span>ACTIVE POINTS</span></div><div class="stat"><strong>${state.routes.length}</strong><span>SAVED DRIFTS</span></div>`;
   document.getElementById('archiveList').innerHTML=vals.length?vals.sort((a,b)=>b[1].time.localeCompare(a[1].time)).map(([id,v])=>{const s=state.signals.find(x=>x.id===id);return `<article class="archive-item"><div class="meta">${new Date(v.time).toLocaleString()}</div><h3>${esc(s?.name||v.name)}</h3><span class="tag">${esc(s?.code||id)}</span>${s?.jp?' <span class="tag jp">JP</span>':''}</article>`}).join(''):`<div class="lockbox">NO INTERCEPTS YET</div>`;
   const routes=[...state.routes].reverse();
-  document.getElementById('routeList').innerHTML=routes.length?routes.map((r,i)=>`<article class="archive-item"><div class="meta">${new Date(r.startedAt).toLocaleString()}</div><h3>DRIFT ${String(state.routes.length-i).padStart(2,'0')}</h3><span class="tag">${fmtTrackDistance(r.distanceM||0)}</span> <span class="tag">${fmtDuration(r.durationMs||0)}</span> <button class="inline-btn" onclick="window.showSavedDrift('${esc(r.id)}')">SHOW ON MAP</button></article>`).join(''):`<div class="lockbox">NO SAVED PATHS YET</div>`;
+  document.getElementById('routeList').innerHTML=routes.length?routes.map((r,i)=>`<article class="archive-item"><div class="meta">${new Date(r.startedAt).toLocaleString()}</div><h3>ROUTE ${String(state.routes.length-i).padStart(2,'0')}</h3><span class="tag">${fmtTrackDistance(r.distanceM||0)}</span> <span class="tag">${fmtDuration(r.durationMs||0)}</span> <button class="inline-btn" onclick="window.showSavedDrift('${esc(r.id)}')">SHOW ON MAP</button></article>`).join(''):`<div class="lockbox">NO SAVED PATHS YET</div>`;
 }
 window.showSavedDrift=id=>{const r=state.routes.find(x=>x.id===id);if(!r)return;showView('fieldView');drawRoute(r.points||[],false);if(r.points?.length)map.fitBounds(L.latLngBounds(r.points.map(p=>[p.lat,p.lng])),{padding:[50,50]});};
 function renderJP(){
@@ -368,7 +368,7 @@ function acceptLocation(pos){
     renderMarkers();return;
   }
   userPos=fix;
-  document.getElementById('geoStatus').textContent=`FIELD LINK ACTIVE // ±${Math.round(fix.accuracy)} m`;
+  document.getElementById('geoStatus').textContent=`LOCATION ON // ±${Math.round(fix.accuracy)} m`;
   if(userMarker)userMarker.setLatLng([fix.lat,fix.lng]);
   else userMarker=L.marker([fix.lat,fix.lng],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(map);
   if(centerOnNextFix){map.setView([fix.lat,fix.lng],14);centerOnNextFix=false;}
@@ -416,7 +416,7 @@ function startTracking(){
   document.getElementById('tracker').classList.add('is-tracking');
   document.getElementById('trackStatus').textContent='RECORDING';document.getElementById('trackStartBtn').disabled=true;document.getElementById('trackStopBtn').disabled=false;
   if(userPos)appendTrackPoint(userPos);
-  trackTimer=setInterval(updateTracker,1000);updateTracker();toast('BREADCRUMB PATH RECORDING');
+  trackTimer=setInterval(updateTracker,1000);updateTracker();toast('RECORDING YOUR ROUTE');
 }
 function stopTracking(){
   if(!tracking)return;
@@ -563,15 +563,15 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
       <form method="dialog" class="shared-card" id="sharedInterceptForm">
         <button class="shared-close" value="cancel" aria-label="Close">×</button>
         <div class="eyebrow">FIELD TRANSMISSION</div>
-        <h2>LOG INTERCEPT</h2>
+        <h2>SAVE FIND</h2>
         <p class="shared-privacy-note">Your live location is sent only to verify that you are within the signal radius. Exact coordinates are not stored with the intercept.</p>
         <input type="hidden" id="sharedSignalId" />
-        <label>FIELD NAME <span>optional</span><input id="sharedAlias" maxlength="40" autocomplete="nickname" placeholder="anonymous is fine" /></label>
-        <label>FIELD NOTE <span>optional</span><textarea id="sharedNote" maxlength="500" rows="4" placeholder="What did you notice?"></textarea></label>
+        <label>DISPLAY NAME <span>optional</span><input id="sharedAlias" maxlength="40" autocomplete="nickname" placeholder="anonymous is fine" /></label>
+        <label>NOTE <span>optional</span><textarea id="sharedNote" maxlength="500" rows="4" placeholder="What did you notice?"></textarea></label>
         <label>PHOTO <span>optional</span><input id="sharedPhoto" type="file" accept="image/*" capture="environment" /></label>
-        <label class="share-check"><input id="sharedPublic" type="checkbox" /> <span>SHOW THIS INTERCEPT IN THE PUBLIC ACTIVITY LOG</span></label>
+        <label class="share-check"><input id="sharedPublic" type="checkbox" /> <span>SHARE THIS FIND IN THE PUBLIC LOG</span></label>
         <div class="shared-actions">
-          <button type="button" class="primary" id="sharedSubmit">TRANSMIT INTERCEPT</button>
+          <button type="button" class="primary" id="sharedSubmit">SAVE FIND</button>
           <button value="cancel" class="secondary">CANCEL</button>
         </div>
       </form>`;
@@ -633,7 +633,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
       else if(reason==='live_location_required')toast('LOCATION REQUIRED FOR SHARED LOG // SAVED ON DEVICE');
       else toast('SHARED LOG OFFLINE // SAVED ON DEVICE');
     }finally{
-      button.disabled=false;button.textContent='TRANSMIT INTERCEPT';
+      button.disabled=false;button.textContent='SAVE FIND';
     }
   }
 
@@ -654,7 +654,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
           ${row.photo_key?'<span class="tag">PHOTO ATTACHED</span>':''}
         </article>`).join(''):'<div class="lockbox">NO PUBLIC INTERCEPTS YET</div>';
     }catch{
-      target.innerHTML='<div class="lockbox">SHARED FIELD LOG OFFLINE // LOCAL ARCHIVE STILL WORKS</div>';
+      target.innerHTML='<div class="lockbox">PUBLIC LOG UNAVAILABLE // YOUR SAVED ITEMS STILL WORK</div>';
     }
   }
 

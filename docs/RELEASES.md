@@ -2,6 +2,12 @@
 
 DRIFT is a location-based psychogeography and psychogeocaching PWA by Loudest Riot Sounds.
 
+## v0.18 — CLEAR FIRST STEPS
+- Opening guide defines a drift, explains why to explore, and gives three concrete first steps.
+- Navigation uses MAP, TRAILS, SAVED, and ABOUT; route and find actions describe what they do.
+- Shared action sizes, corner radii, focus states, and disabled states standardize controls.
+- Asset URLs and service-worker cache advance together to v18.
+
 ## v0.17 — ENTER THE FIELD
 - Quick Start and ENTER THE FIELD appear on every fresh app opening, including returning visitors.
 - Entering the field does not require browser storage or request location permission.
