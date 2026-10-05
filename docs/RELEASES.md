@@ -2,6 +2,12 @@
 
 DRIFT is a location-based psychogeography and psychogeocaching PWA by Loudest Riot Sounds.
 
+## v0.19 — DEVICE PROFILE + LOCATION FEEDBACK
+- NFC cards are optional reference links; the guide describes possible destinations without promising a card at every marker or automatic verification.
+- LOCATE returns to the map, requests a fresh fix on repeat taps, and provides persistent permission, timeout, and accuracy feedback.
+- SAVED includes an optional device-local nickname and JSON export; precise route coordinates require an explicit checkbox. No login, sync, or import is implied.
+- Privacy notice covers local profiles and exported data. Asset/cache versions advance together to v19.
+
 ## v0.18 — CLEAR FIRST STEPS
 - Opening guide defines a drift, explains why to explore, and gives three concrete first steps.
 - Navigation uses MAP, TRAILS, SAVED, and ABOUT; route and find actions describe what they do.

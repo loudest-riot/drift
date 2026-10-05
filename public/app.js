@@ -364,11 +364,11 @@ function acceptLocation(pos){
   const fix={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};
   if(!reliableLocation(fix)){
     clearLocation();
-    document.getElementById('geoStatus').textContent='APPROXIMATE // MAP UNCHANGED';
+    locationMessage('PRECISE LOCATION NEEDED','Your phone supplied only an approximate location. Enable Precise Location for your browser or try outdoors. The map stays unchanged.');
     renderMarkers();return;
   }
   userPos=fix;
-  document.getElementById('geoStatus').textContent=`LOCATION ON // ±${Math.round(fix.accuracy)} m`;
+  locationMessage(`LOCATION ON // ±${Math.round(fix.accuracy)} m`);
   if(userMarker)userMarker.setLatLng([fix.lat,fix.lng]);
   else userMarker=L.marker([fix.lat,fix.lng],{icon:L.divIcon({className:'',html:'<div class="user-dot"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(map);
   if(centerOnNextFix){map.setView([fix.lat,fix.lng],14);centerOnNextFix=false;}
@@ -376,19 +376,65 @@ function acceptLocation(pos){
   renderMarkers();
 }
 function startLocation(recenter=false){
-  if(!navigator.geolocation){toast('Geolocation unavailable');return;}
+  if(recenter)showView('fieldView');
+  if(!navigator.geolocation){locationMessage('LOCATION UNAVAILABLE','This browser cannot provide location. Try opening DRIFT directly in Safari or Chrome.');return;}
   centerOnNextFix=recenter;
   if(recenter&&reliableLocation(userPos)){map.setView([userPos.lat,userPos.lng],14);centerOnNextFix=false;}
-  if(locationWatchId!==null)return;
-  document.getElementById('geoStatus').textContent='ACQUIRING LOCATION';
-  locationWatchId=navigator.geolocation.watchPosition(acceptLocation,err=>{
+  locationMessage('FINDING YOUR LOCATION','Allow location when your browser asks. A precise fix may take a few seconds outdoors.');
+  const failed=err=>{
     clearLocation();centerOnNextFix=false;
     if(locationWatchId!==null)navigator.geolocation.clearWatch(locationWatchId);
     locationWatchId=null;
-    document.getElementById('geoStatus').textContent=err.code===1?'LOCATION BLOCKED':'LOCATION UNAVAILABLE';
-    renderMarkers();toast('LOCATION UNAVAILABLE // HINES MAP STILL WORKS');
-  },{enableHighAccuracy:true,maximumAge:4000,timeout:12000});
+    const message=err.code===1?'Location permission is blocked. Allow location for this site in your browser settings, then tap LOCATE again.':err.code===3?'Location timed out. Step outside with a clear view of the sky, then tap LOCATE again.':'Your phone could not get a location. Check Location Services and your connection, then tap LOCATE again.';
+    locationMessage(err.code===1?'LOCATION BLOCKED':'LOCATION UNAVAILABLE',message);
+    renderMarkers();toast(message);
+  };
+  const options={enableHighAccuracy:true,maximumAge:0,timeout:20000};
+  // A repeat tap requests a fresh fix instead of silently waiting on an old watcher.
+  if(locationWatchId!==null){navigator.geolocation.getCurrentPosition(acceptLocation,failed,options);return;}
+  locationWatchId=navigator.geolocation.watchPosition(acceptLocation,failed,options);
 }
+function locationMessage(status,message=''){
+  document.getElementById('geoStatus').textContent=status;
+  const notice=document.getElementById('locationNotice');
+  notice.textContent=message;notice.hidden=!message;
+}
+
+const PROFILE_KEY='lr-drift-profile-v01';
+let deviceProfile={nickname:''};
+try{
+  const storedProfile=JSON.parse(localStorage.getItem(PROFILE_KEY));
+  if(typeof storedProfile?.nickname==='string')deviceProfile.nickname=storedProfile.nickname.slice(0,40);
+}catch{}
+document.getElementById('deviceNickname').value=deviceProfile.nickname;
+document.getElementById('deviceProfileForm').onsubmit=e=>{
+  e.preventDefault();
+  const next={nickname:document.getElementById('deviceNickname').value.trim().slice(0,40)};
+  const status=document.getElementById('deviceProfileStatus');
+  try{localStorage.setItem(PROFILE_KEY,JSON.stringify(next));deviceProfile=next;status.textContent='Profile saved on this device.';}
+  catch{status.textContent='This browser could not save your profile. Check whether site storage is allowed.';}
+};
+function buildDeviceExport(includeCoordinates=false){
+  return {
+    format:'drift-device-export',version:1,exportedAt:new Date().toISOString(),
+    includesExactCoordinates:includeCoordinates,
+    profile:{...deviceProfile},finds:clone(state.intercepts),favorites:[...savedTrails],
+    routes:state.routes.map(route=>{
+      const {points,...summary}=route;
+      return includeCoordinates?{...summary,points:clone(points||[])}:{...summary,pointCount:points?.length||0};
+    })
+  };
+}
+document.getElementById('exportDataBtn').onclick=()=>{
+  const status=document.getElementById('deviceProfileStatus');
+  try{
+    const data=buildDeviceExport(document.getElementById('exportCoordinates').checked);
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    const link=document.createElement('a');link.href=url;link.download=`drift-data-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    status.textContent='Export requested. Save the JSON file in Files or Downloads. Import and account sync are not available yet.';
+  }catch{status.textContent='Export failed. Please try again in Safari or Chrome.';}
+};
 
 function appendTrackPoint(pos){
   if(!reliableLocation(pos)||pos.accuracy>100)return;
@@ -481,7 +527,7 @@ document.getElementById('trackStartBtn').onclick=startTracking;
 document.getElementById('trackStopBtn').onclick=stopTracking;
 document.getElementById('trackClearBtn').onclick=clearTrack;
 const startHint=document.getElementById('startHint');
-if(localStorage.getItem(START_HINT_KEY)==='1')startHint.classList.add('dismissed');
+try{if(localStorage.getItem(START_HINT_KEY)==='1')startHint.classList.add('dismissed');}catch{}
 document.getElementById('dismissStartHint').onclick=()=>{localStorage.setItem(START_HINT_KEY,'1');startHint.classList.add('dismissed');};
 
 document.getElementById('landmarksToggle').onclick=e=>{

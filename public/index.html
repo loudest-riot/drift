@@ -27,9 +27,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css?v=18" />
+  <link rel="stylesheet" href="styles.css?v=19" />
 </head>
-<body data-release="18">
+<body data-release="19">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
@@ -71,6 +71,7 @@
       <div class="map-head">
         <div class="eyebrow">HINES PARK</div>
         <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION OFF</span></div>
+        <p id="locationNotice" class="location-notice" role="status" hidden></p>
         <div class="layer-chips" aria-label="Map style">
           <button class="chip map-style active" data-map-style="minimal" type="button" aria-pressed="true">TRAILS ONLY</button>
           <button class="chip map-style" data-map-style="standard" type="button" aria-pressed="false">STREET MAP</button>
@@ -127,6 +128,19 @@
     </section>
 
     <section id="archiveView" class="view">
+      <section class="device-profile" aria-labelledby="deviceProfileTitle">
+        <h2 id="deviceProfileTitle">YOUR DEVICE PROFILE</h2>
+        <p>No login needed. Your nickname, finds, favorites, and saved routes belong to this browser on this device—not a synced online account. Clearing site data can erase them.</p>
+        <form id="deviceProfileForm">
+          <label for="deviceNickname">Nickname (optional)</label>
+          <input id="deviceNickname" maxlength="40" autocomplete="nickname" placeholder="Explorer" />
+          <button class="mini-primary" type="submit">SAVE PROFILE</button>
+        </form>
+        <label class="export-check"><input id="exportCoordinates" type="checkbox" /> Include exact route coordinates in my export</label>
+        <p>Exports contain your profile, personal finds, favorites, and route summaries. Check the box only if you want precise paths included. Keep that file private. Public posts and uploaded photos are not included.</p>
+        <button id="exportDataBtn" class="mini-primary" type="button">EXPORT MY DATA</button>
+        <p id="deviceProfileStatus" role="status"></p>
+      </section>
       <div class="section-head">
         <div class="eyebrow">PERSONAL ARCHIVE</div>
         <h2>YOUR FINDS + ROUTES</h2>
@@ -243,7 +257,7 @@
         <ol class="start-steps">
           <li><strong>Pick somewhere to explore.</strong> Open TRAILS for routes and access points, or PLACES for a park landmark.</li>
           <li><strong>Follow a clue.</strong> Turn on FINDS in MAP LAYERS, then tap a marker for its clue. LOCATE can show where you are.</li>
-          <li><strong>Discover the sound.</strong> Look for a DRIFT card at the find. Hold the top of your phone almost against its NFC chip, then tap the notification to open the linked transmission.</li>
+          <li><strong>Discover the sound.</strong> A clue may lead to music or a creative find. You might also encounter a DRIFT NFC card: scanning one could open a place-linked sound, a clue, or a project page. The destination depends on that card. Cards are optional; one is not promised at every marker.</li>
         </ol>
         <p><strong>ENTER THE FIELD opens the map.</strong> RECORD ROUTE saves the path of your walk or ride to SAVED. Location is optional for browsing; recording and nearby-find checks need precise location.</p>
         <p>Your routes and personal finds stay on this device. Sharing a find is optional.</p>
@@ -256,6 +270,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=18"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>

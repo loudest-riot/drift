@@ -186,3 +186,9 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #b5d
 .start-steps{padding-left:22px}.start-steps li{padding:7px 0}
 .modal-card{border-radius:16px}.modal-head h2{line-height:1.2}
 @media(orientation:landscape) and (max-height:600px){.top-actions #helpBtn,.top-actions #locateBtn{min-height:44px;height:44px}}
+.location-notice{font-size:11px;line-height:1.45;color:#424940;margin:8px 0;max-height:120px;overflow:auto}
+.device-profile{margin:18px;padding:16px;background:#fff;border:1px solid #dddeda;border-radius:14px}
+.device-profile h2{font-size:20px;margin:0 0 10px}.device-profile p{font-size:13px;line-height:1.55;color:#515b51}
+.device-profile form{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.device-profile form label{width:100%;font-size:13px}
+.device-profile input[type="text"],#deviceNickname{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid #dddeda;border-radius:12px;background:#f3f3ef;color:#171a18}
+.export-check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:13px;margin-top:12px}.export-check input{width:20px;height:20px;flex-shrink:0}

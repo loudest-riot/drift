@@ -1,7 +1,7 @@
-// Release 18: app code is network-first; only static images are cache-first.
-const CACHE='drift-v18';
+// Release 19: app code is network-first; only static images are cache-first.
+const CACHE='drift-v19';
 const LEAFLET=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'];
-const CORE=['./','./index.html','./features.html','./styles.css?v=18','./app.js?v=18','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
+const CORE=['./','./index.html','./features.html','./styles.css?v=19','./app.js?v=19','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
 });
