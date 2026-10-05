@@ -2,6 +2,11 @@
 
 DRIFT is a location-based psychogeography and psychogeocaching PWA by Loudest Riot Sounds.
 
+## v0.17 — ENTER THE FIELD
+- Quick Start and ENTER THE FIELD appear on every fresh app opening, including returning visitors.
+- Entering the field does not require browser storage or request location permission.
+- Asset URLs and the service-worker cache advance together to v17.
+
 ## v0.16 — TRAILS + PSYCHOGEOCACHING
 - MINIMAL has no street tiles or permanent labels; county trail lines are the default map content. STANDARD adds OpenStreetMap.
 - Optional signal, landmark, city, MTB, and paved overlays live in a collapsed control.

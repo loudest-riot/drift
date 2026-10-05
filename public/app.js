@@ -1,6 +1,5 @@
 const FIELD_KEY='lr-drift-v03';
 const OLD_KEYS=['lr-field-relay-v01'];
-const ONBOARD_KEY='lr-drift-onboarded-v03';
 const START_HINT_KEY='lr-drift-start-hint-v04';
 const INTERCEPT_RADIUS=140;
 const DETECT_RADIUS=2500;
@@ -476,7 +475,7 @@ document.getElementById('signalsToggle').onclick=e=>{
 document.getElementById('helpBtn').onclick=()=>toggleHelp(true);
 document.getElementById('closeHelpBtn').onclick=()=>toggleHelp(false);
 document.getElementById('learnConceptBtn').onclick=()=>{toggleHelp(false);showView('infoView');document.getElementById('psychogeocaching').scrollIntoView({block:'start'});};
-document.getElementById('gotItBtn').onclick=()=>{localStorage.setItem(ONBOARD_KEY,'1');toggleHelp(false);};
+document.getElementById('gotItBtn').onclick=()=>toggleHelp(false);
 document.getElementById('quickStart').addEventListener('click',e=>{if(e.target.id==='quickStart')toggleHelp(false);});
 document.getElementById('trackStartBtn').onclick=startTracking;
 document.getElementById('trackStopBtn').onclick=stopTracking;
@@ -500,10 +499,13 @@ document.getElementById('jpForm').addEventListener('submit',e=>{
   saveState();renderJP();renderMarkers();e.target.reset();toast(`${s.code} ASSIGNED`);
 });
 
+// Show Quick Start on every fresh opening, including returning visitors.
+// Entering the field never depends on browser storage or requests location.
+toggleHelp(true);
 archiveAndRemoveJP();
 initMap();renderArchive();renderJP();
 const incomingSignal=new URLSearchParams(location.search).get('signal');if(incomingSignal)openSignal(incomingSignal);
-// No automatic location permission or blocking onboarding modal on page load.
+// Location remains an explicit opt-in after entering the field.
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   let refreshing=false;
   const wasControlled=!!navigator.serviceWorker.controller;
