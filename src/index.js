@@ -5,6 +5,17 @@ const API_HEADERS={
 };
 
 const schemaStatements=[
+  `CREATE TABLE IF NOT EXISTS landmarks (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  note TEXT,
+  lat REAL NOT NULL CHECK(lat BETWEEN -90 AND 90),
+  lng REAL NOT NULL CHECK(lng BETWEEN -180 AND 180),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_landmarks_status ON landmarks(status,created_at)`,
   `CREATE TABLE IF NOT EXISTS signals (
     id TEXT PRIMARY KEY,
     code TEXT NOT NULL UNIQUE,
@@ -123,6 +134,31 @@ async function createIntercept(request,env){
   return json({ok:true,id,signal_id:signalId,verified:true,public:!!isPublic},201);
 }
 
+const LANDMARK_KINDS=new Set(['LANDMARK','PARK','WATER','HISTORY','SHELTER','BURIAL']);
+async function listLandmarks(env){
+  await ensureSchema(env);
+  const {results=[]}=await env.DB.prepare(`SELECT id,name,kind,note,lat,lng FROM landmarks WHERE status='approved' ORDER BY created_at DESC LIMIT 500`).all();
+  return json({landmarks:results});
+}
+async function createLandmark(request,env){
+  // Bound the actual body, including chunked requests without Content-Length.
+  if(Number(request.headers.get('content-length'))>8192)return json({error:'payload_too_large'},413);
+  if(!request.body)return json({error:'invalid_json'},400);
+  const reader=request.body.getReader();let size=0,chunks=[];
+  while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>8192){await reader.cancel();return json({error:'payload_too_large'},413);}chunks.push(value);}
+  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+  let body;try{body=JSON.parse(new TextDecoder().decode(bytes));}catch{return json({error:'invalid_json'},400);}
+  if(!body||Array.isArray(body)||typeof body!=='object')return json({error:'invalid_landmark'},400);
+  const id=body.id;
+  if(typeof id!=='string'||!/^[-0-9a-f]{36}$/i.test(id)||typeof body.name!=='string'||!body.name.trim()||body.name.length>80||!LANDMARK_KINDS.has(body.kind)||typeof body.lat!=='number'||!Number.isFinite(body.lat)||Math.abs(body.lat)>90||typeof body.lng!=='number'||!Number.isFinite(body.lng)||Math.abs(body.lng)>180||(body.note!=null&&(typeof body.note!=='string'||body.note.length>500)))return json({error:'invalid_landmark'},400);
+  const name=cleanText(body.name,80);if(!name)return json({error:'invalid_landmark'},400);
+  await ensureSchema(env);
+  // Client UUID makes a retry safe when a response or local status save is lost.
+  // A caller can never update a reviewed record or choose public visibility.
+  await env.DB.prepare(`INSERT OR IGNORE INTO landmarks (id,name,kind,note,lat,lng,status) VALUES (?,?,?,?,?,?,'pending')`).bind(id,name,body.kind,cleanText(body.note,500),body.lat,body.lng).run();
+  return json({ok:true,id,submitted:true},201);
+}
+
 async function uploadPhoto(request,env,interceptId){
   if(!env.PHOTOS)return json({error:'photo_storage_unavailable'},503);
   await ensureSchema(env);
@@ -161,6 +197,8 @@ async function api(request,env){
     return json({ok:true,database:!!env.DB,photos:!!env.PHOTOS,privacy:'location is verified in memory and exact coordinates are not stored with intercepts'});
   }
   if(!env.DB)return json({error:'database_unavailable'},503);
+  if(path==='/api/landmarks'&&request.method==='GET')return listLandmarks(env);
+  if(path==='/api/landmarks'&&request.method==='POST')return createLandmark(request,env);
   if(path==='/api/signals'&&request.method==='GET')return listSignals(env);
   if(path==='/api/intercepts'&&request.method==='GET')return listIntercepts(request,env);
   if(path==='/api/intercepts'&&request.method==='POST')return createIntercept(request,env);
@@ -182,3 +220,4 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
+

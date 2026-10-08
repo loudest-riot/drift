@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0a0c0b" />
   <title>Privacy // DRIFT</title>
-  <link rel="stylesheet" href="styles.css?v=20" />
+  <link rel="stylesheet" href="styles.css?v=21" />
   
   
 </head>
@@ -21,8 +21,12 @@
     <p>When you submit a shared intercept, your current latitude and longitude are sent to the DRIFT Worker long enough to calculate whether you are within the signal's allowed radius. The DRIFT database stores the verification result, not those submitted coordinates.</p>
 
     <h2>LOCAL DEVICE DATA</h2>
-    <p>DRIFT uses browser storage for your optional device-profile nickname, preferences, favorite trails, personal finds, and saved routes. Routes may contain precise location points. This is a browser-local profile, not an authenticated or synced account. Clearing site data can erase it, and another browser or installed app may have separate storage.</p>
-    <p>EXPORT MY DATA downloads a JSON file of your local profile, finds, favorites, and route summaries. Exact route points are excluded by default; include them only by selecting the export checkbox. An export containing precise paths can reveal sensitive places, so keep it private. Export does not send the file to DRIFT's server, include public posts or uploaded photos, or provide account sync. Import is not currently available.</p>
+    <p>DRIFT uses browser storage for your optional device-profile nickname, preferences, favorite trails, personal finds, landmarks, and saved routes. Routes may contain precise location points. This is a browser-local profile, not an authenticated or synced account. Clearing site data can erase it, and another browser or installed app may have separate storage.</p>
+    <p>EXPORT MY DATA downloads a JSON file of your local profile, finds, favorites, and landmark descriptions, and route summaries. Exact route and landmark coordinates are excluded by default; include them only by selecting the export checkbox. An export containing precise paths can reveal sensitive places, so keep it private. Export does not send the file to DRIFT's server, include public posts or uploaded photos, or provide account sync. Import is not currently available.</p>
+
+    <h2>LANDMARKS</h2>
+    <p>Landmarks you add are saved in this browser on this device. Adding a pin does not share it. If you choose SUBMIT FOR REVIEW, DRIFT stores the landmark’s exact pin coordinates, name, type, notes, identifier, and submission time in its shared database. Pending and rejected submissions are not shown on the public map. Approved landmarks are public.</p>
+    <p>Editing or removing your device copy does not change a submitted version. To request a change or removal of a submission, contact sounds@loudestriot.com with its name and location. Submissions currently have no automated deletion schedule. Landmarks are reference places, not automatically caches or music signals.</p>
 
     <h2>SHARED INTERCEPTS</h2>
     <p>If you choose to transmit an intercept to DRIFT, the shared database may store the signal identifier, an optional field name, an optional note, whether you chose public display, a verification flag, an optional photo reference, and the submission time.</p>
@@ -43,7 +47,8 @@
     <h2>CHANGES</h2>
     <p>This notice will be updated as DRIFT gains new shared features. Material changes should be reflected here before those features are treated as part of the normal public app.</p>
 
-    <p class="directory-note">Last updated: October 5, 2026.</p>
+    <p class="directory-note">Last updated: October 8, 2026.</p>
   </main>
 </body>
 </html>
+

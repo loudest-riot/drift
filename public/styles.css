@@ -209,3 +209,21 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #b5d
 .device-profile form{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.device-profile form label{width:100%;font-size:13px}
 .device-profile input[type="text"],#deviceNickname{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid #dddeda;border-radius:12px;background:#f3f3ef;color:#171a18}
 .export-check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:13px;margin-top:12px}.export-check input{width:20px;height:20px;flex-shrink:0}
+
+
+/* Personal landmarks extend the existing quiet map controls. */
+#addLandmarkBtn{pointer-events:auto;margin-top:8px}
+.landmark-dialog{width:min(540px,calc(100% - 24px));max-height:90dvh;overflow:auto;border:1px solid #dddeda;border-radius:16px;padding:20px;background:#f3f3ef;color:#171a18}
+.landmark-dialog::backdrop{background:rgba(10,12,11,.7)}
+.landmark-dialog h2{font-size:24px;margin:0}.landmark-dialog p{font-size:16px;line-height:1.5}
+.landmark-dialog label,.landmark-dialog legend{display:block;font-size:14px;margin:12px 0 5px}
+.landmark-dialog input,.landmark-dialog textarea,.landmark-dialog select{width:100%;min-height:44px;padding:10px;border:1px solid #b8beb5;border-radius:10px;background:#fff;color:#171a18;font:inherit;font-size:16px}
+.landmark-dialog fieldset{min-width:0;border:1px solid #dddeda;border-radius:12px;margin:16px 0;padding:12px}
+.landmark-dialog .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.landmark-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.landmark-actions button{min-height:44px;font-size:14px;white-space:normal}.landmark-local-note{color:#515b51}.landmark-dialog .modal-head{flex-wrap:wrap}
+.landmark-picker[hidden]{display:none}.landmark-picker{position:absolute;z-index:1001;left:12px;right:12px;bottom:16px;padding:12px;border:1px solid #b8beb5;border-radius:14px;background:#f3f3ef;color:#171a18;pointer-events:auto;box-shadow:0 3px 16px #0003}
+.landmark-picker p{font-size:14px;margin:0 0 10px;line-height:1.4}.landmark-picker button{font-size:14px}
+.picking-landmark #tracker,.picking-landmark #startHint,.picking-landmark .map-head,.picking-landmark .hines-controls{display:none}.picking-landmark #map{cursor:crosshair}
+.landmark-draft-dot{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#202522;color:#fff;border:3px solid #b5d12d;font-size:22px;box-shadow:0 2px 8px #0005}
+#savedLandmarks p{font-size:16px;line-height:1.5;overflow-wrap:anywhere}#savedLandmarks h3{overflow-wrap:anywhere}
+@media(max-width:360px){.landmark-dialog{padding:14px}.landmark-dialog .form-grid{grid-template-columns:1fr}}

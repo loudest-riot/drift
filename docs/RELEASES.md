@@ -1,3 +1,28 @@
+## Release 21 — Personal landmarks (October 8, 2026)
+
+- Add a named landmark with optional notes and a type. Choose a draggable map pin, enter coordinates, or explicitly request a precise device location.
+- Landmarks persist on the device, appear in PLACES and SAVED, and can be edited or removed. Exports omit their coordinates unless the coordinate checkbox is selected.
+- SUBMIT FOR REVIEW explicitly sends the saved version to `/api/landmarks`. Retries use the same UUID. Only approved submissions are returned by the public API; no anonymous approval endpoint exists.
+- Failed saves preserve the form; failed submissions preserve the local landmark. Editing/removing a local copy does not change the submitted version.
+- Runtime schema initialization creates the landmarks table without a manual migration step. `migrations/0002_landmarks.sql` provides the same schema for managed migration workflows.
+
+### Review submitted landmarks
+
+Review through the existing Cloudflare D1 database bound as `DB` to the production `drift` Worker. No new account or public admin interface is required. In the authenticated D1 console, list pending records:
+
+```sql
+SELECT id, name, kind, note, lat, lng, created_at
+FROM landmarks WHERE status = 'pending' ORDER BY created_at;
+```
+
+Check the pin, description, public access, duplicate landmarks, and sensitivity. A cemetery or memorial remains a reference landmark, never a cache. Approve only the exact reviewed ID using a bound parameter or a safely quoted UUID:
+
+```sql
+UPDATE landmarks SET status = 'approved' WHERE id = '<reviewed UUID>' AND status = 'pending';
+```
+
+Reject with `status = 'rejected'` instead. Reloading DRIFT fetches approved community landmarks. The device copy retains its submitted status; that label is not a live review tracker. Use the authenticated database console for requested submission edits/removal; device edits do not rewrite shared records.
+
 # DRIFT Release / Field Log
 
 DRIFT is a location-based psychogeography and psychogeocaching PWA by Loudest Riot Sounds.
@@ -75,3 +100,4 @@ Status: shared-service foundation.
 
 ## Version discipline
 Meaningful field releases get a version heading here. Git commits remain the technical source history; this document records user-visible behavior and field-test milestones.
+

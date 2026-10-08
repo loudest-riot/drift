@@ -143,6 +143,8 @@ function initMap(){
   renderLandmarks();renderMunicipalities();renderMarkers();renderSavedRoute();
   // Safari viewport and orientation changes must not leave blank map strips.
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.getElementById('map'));
+  initLandmarkTools();
+  loadCommunityLandmarks();
   loadTrails();
 }
 function setMapStyle(style){
@@ -216,14 +218,14 @@ function showTrail(id){
 }
 function renderLandmarks(){
   landmarkLayer.clearLayers();
-  landmarks.forEach(lm=>{
+  [...landmarks,...communityLandmarks.filter(lm=>!personalLandmarks.some(p=>p.submissionId===lm.id)),...personalLandmarks].forEach(lm=>{
     // A signal already represents these coordinates; don't stack two tap targets.
     if(state.signals.some(s=>!s.jp&&s.lat!=null&&distanceM(s,lm)<5))return;
     const sensitive=!!lm.sensitive;
     const symbol=sensitive?'✦':lm.kind==='WATER'?'≈':lm.kind==='HISTORY'?'◇':'○';
     const html=`<div class="landmark-dot ${sensitive?'sensitive':''}">${symbol}</div>`;
     const m=L.marker([lm.lat,lm.lng],{icon:L.divIcon({className:'',html,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(landmarkLayer);
-    bindLocationInfo(m,`<div class="map-popup"><div class="eyebrow">${esc(lm.kind)}${sensitive?' // SENSITIVE':''}</div><strong>${esc(lm.name)}</strong><p>${esc(lm.note)}</p></div>`);
+    bindLocationInfo(m,`<div class="map-popup"><div class="eyebrow">${esc(lm.kind)}${lm.source==='personal'?' // YOUR LANDMARK':lm.source==='community'?' // COMMUNITY':''}${sensitive?' // SENSITIVE':''}</div><strong>${esc(lm.name)}</strong><p>${esc(lm.note||'')}</p>${lm.source==='personal'?`<button type="button" class="popup-details" data-edit-landmark="${esc(lm.id)}">EDIT LANDMARK</button>`:''}</div>`);
   });
 }
 function renderMunicipalities(){
@@ -419,6 +421,7 @@ function buildDeviceExport(includeCoordinates=false){
     format:'drift-device-export',version:1,exportedAt:new Date().toISOString(),
     includesExactCoordinates:includeCoordinates,
     profile:{...deviceProfile},finds:clone(state.intercepts),favorites:[...savedTrails],
+    landmarks:personalLandmarks.map(lm=>{const {lat,lng,...details}=lm;return includeCoordinates?{...details,lat,lng}:details;}),
     routes:state.routes.map(route=>{
       const {points,...summary}=route;
       return includeCoordinates?{...summary,points:clone(points||[])}:{...summary,pointCount:points?.length||0};
@@ -544,6 +547,96 @@ document.getElementById('jpForm').addEventListener('submit',e=>{
   s.name=document.getElementById('jpName').value.trim();s.lat=lat;s.lng=lng;s.region='HINES PARK // JP PICK';s.status='ACTIVE';s.transmission='JP FIELD TRANSMISSION';s.clue=document.getElementById('jpClue').value.trim()||'JP field point acquired.';
   saveState();renderJP();renderMarkers();e.target.reset();toast(`${s.code} ASSIGNED`);
 });
+
+const LANDMARK_KEY='lr-drift-landmarks-v01';
+const LANDMARK_KINDS=['LANDMARK','PARK','WATER','HISTORY','SHELTER','BURIAL'];
+let personalLandmarks=[],communityLandmarks=[],landmarkEditId=null,draftLandmarkPin=null,pickingLandmark=false,landmarkLocationRequest=0;
+const landmarkDialog=document.getElementById('landmarkDialog');
+const landmarkForm=document.getElementById('landmarkForm');
+const landmarkStatus=document.getElementById('landmarkFormStatus');
+function validLandmark(lm){return !!lm&&typeof lm.id==='string'&&typeof lm.name==='string'&&lm.name.trim().length>0&&Number.isFinite(lm.lat)&&Math.abs(lm.lat)<=90&&Number.isFinite(lm.lng)&&Math.abs(lm.lng)<=180&&LANDMARK_KINDS.includes(lm.kind);}
+try{const saved=JSON.parse(localStorage.getItem(LANDMARK_KEY));if(Array.isArray(saved))personalLandmarks=saved.filter(validLandmark).map(lm=>({...lm,source:'personal',sensitive:lm.kind==='BURIAL'}));}catch{}
+function savePersonalLandmarks(next){
+  try{localStorage.setItem(LANDMARK_KEY,JSON.stringify(next));personalLandmarks=next;renderLandmarks();renderPersonalLandmarks();return true;}
+  catch{toast('Could not save landmarks. Check whether browser storage is allowed.');return false;}
+}
+function renderPersonalLandmarks(){
+  const group=document.getElementById('personalPlaceOptions')||document.createElement('optgroup');group.id='personalPlaceOptions';group.label='Your landmarks';group.replaceChildren();
+  personalLandmarks.forEach(lm=>{const option=document.createElement('option');option.value='personal-'+lm.id;option.textContent=lm.name;option.dataset.lat=lm.lat;option.dataset.lng=lm.lng;group.append(option);});
+  document.getElementById('hinesPlaceSelect').append(group);
+  document.getElementById('savedLandmarks').innerHTML=personalLandmarks.map(lm=>`<article class="archive-item"><div class="meta">${esc(lm.kind)} // ${lm.submissionId?'SUBMITTED FOR REVIEW':'DEVICE ONLY'}</div><h3>${esc(lm.name)}</h3><p>${esc(lm.note||'')}</p><div class="landmark-actions"><button class="chip" type="button" data-show-landmark="${esc(lm.id)}">SHOW ON MAP</button><button class="chip" type="button" data-edit-landmark="${esc(lm.id)}">EDIT</button><button class="chip" type="button" data-submit-landmark="${esc(lm.id)}" ${lm.submissionId?'disabled':''}>${lm.submissionId?'SUBMITTED':'SUBMIT FOR REVIEW'}</button><button class="chip" type="button" data-delete-landmark="${esc(lm.id)}">REMOVE FROM DEVICE</button></div></article>`).join('')||'<p class="lede">No landmarks saved yet. Choose ADD LANDMARK on the map.</p>';
+}
+function showLandmarkEditor(id=null){
+  cancelLandmarkPicking();landmarkEditId=id;landmarkForm.reset();landmarkStatus.textContent='';
+  const lm=personalLandmarks.find(lm=>lm.id===id);
+  document.getElementById('landmarkTitle').textContent=lm?'Edit landmark':'Add a landmark';
+  if(lm){document.getElementById('landmarkName').value=lm.name;document.getElementById('landmarkKind').value=lm.kind;document.getElementById('landmarkNote').value=lm.note||'';setLandmarkCoordinates(lm);if(lm.submissionId)landmarkStatus.textContent='Edits update your device copy. Your submitted version stays unchanged.';}
+  landmarkDialog.showModal();
+}
+function setLandmarkCoordinates(pos){document.getElementById('landmarkLat').value=pos.lat.toFixed(6);document.getElementById('landmarkLng').value=pos.lng.toFixed(6);}
+function cancelLandmarkPicking(){
+  pickingLandmark=false;document.getElementById('landmarkPicker').hidden=true;document.getElementById('fieldView').classList.remove('picking-landmark');
+  if(draftLandmarkPin){map.removeLayer(draftLandmarkPin);draftLandmarkPin=null;}
+}
+function closeLandmarkEditor(){landmarkLocationRequest++;landmarkDialog.close();cancelLandmarkPicking();}
+function placeLandmarkPin(pos){
+  if(draftLandmarkPin)draftLandmarkPin.setLatLng(pos);
+  else{draftLandmarkPin=L.marker(pos,{draggable:true,icon:L.divIcon({className:'',html:'<div class="landmark-draft-dot">+</div>',iconSize:[32,32],iconAnchor:[16,16]})}).addTo(map);draftLandmarkPin.on('dragend',updateLandmarkPinStatus);}
+  updateLandmarkPinStatus();
+}
+function updateLandmarkPinStatus(){const pos=draftLandmarkPin.getLatLng();document.getElementById('confirmLandmarkPin').disabled=false;document.getElementById('landmarkPickerStatus').textContent=`Pin: ${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}. Drag to adjust, then choose USE THIS PIN.`;}
+function initLandmarkTools(){
+  renderPersonalLandmarks();
+  document.getElementById('addLandmarkBtn').onclick=()=>showLandmarkEditor();
+  document.getElementById('closeLandmarkDialog').onclick=closeLandmarkEditor;document.getElementById('cancelLandmarkDialog').onclick=closeLandmarkEditor;
+  landmarkDialog.addEventListener('cancel',()=>{landmarkLocationRequest++;cancelLandmarkPicking();});
+  document.getElementById('pickLandmarkLocation').onclick=()=>{
+    landmarkLocationRequest++;landmarkDialog.close();showView('fieldView');centerOnNextFix=false;pickingLandmark=true;
+    document.getElementById('landmarkPicker').hidden=false;document.getElementById('fieldView').classList.add('picking-landmark');document.getElementById('confirmLandmarkPin').disabled=true;
+    document.getElementById('landmarkPickerStatus').textContent='Tap the map to place a pin, or drag the pin to adjust it.';
+    const lat=document.getElementById('landmarkLat'),lng=document.getElementById('landmarkLng');
+    if(lat.value!==''&&lng.value!==''&&lat.validity.valid&&lng.validity.valid)placeLandmarkPin(L.latLng(Number(lat.value),Number(lng.value)));
+  };
+  map.on('click',e=>{if(pickingLandmark)placeLandmarkPin(e.latlng);});
+  document.getElementById('confirmLandmarkPin').onclick=()=>{if(!draftLandmarkPin)return;setLandmarkCoordinates(draftLandmarkPin.getLatLng());cancelLandmarkPicking();landmarkDialog.showModal();};
+  document.getElementById('cancelLandmarkPin').onclick=()=>{cancelLandmarkPicking();landmarkDialog.showModal();};
+  document.getElementById('useLandmarkLocation').onclick=()=>{
+    if(!navigator.geolocation){landmarkStatus.textContent='Location unavailable. Choose a pin on the map instead.';return;}
+    const request=++landmarkLocationRequest;landmarkStatus.textContent='Finding a precise location…';
+    navigator.geolocation.getCurrentPosition(pos=>{if(request!==landmarkLocationRequest||!landmarkDialog.open)return;const fix={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy};if(!reliableLocation(fix)){landmarkStatus.textContent='Only approximate location is available. Choose a pin on the map instead.';return;}setLandmarkCoordinates(fix);landmarkStatus.textContent=`Location set (±${Math.round(fix.accuracy)} m). Check the pin before saving.`;},()=>{if(request===landmarkLocationRequest&&landmarkDialog.open)landmarkStatus.textContent='Could not get location. Choose a pin on the map instead.';},{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+  };
+  landmarkForm.onsubmit=e=>{
+    e.preventDefault();const existing=personalLandmarks.find(lm=>lm.id===landmarkEditId);
+    const lm={...existing,id:existing?.id||crypto.randomUUID(),name:document.getElementById('landmarkName').value.trim(),kind:document.getElementById('landmarkKind').value,note:document.getElementById('landmarkNote').value.trim(),lat:Number(document.getElementById('landmarkLat').value),lng:Number(document.getElementById('landmarkLng').value),source:'personal',updatedAt:new Date().toISOString()};lm.sensitive=lm.kind==='BURIAL';
+    if(!validLandmark(lm)||!landmarkForm.reportValidity()){landmarkStatus.textContent='Enter a name and valid coordinates.';return;}
+    if([...landmarks,...personalLandmarks,...communityLandmarks].some(other=>other.id!==lm.id&&other.name.toLowerCase()===lm.name.toLowerCase()&&distanceM(other,lm)<25)){landmarkStatus.textContent='A landmark with this name is already saved at this location.';return;}
+    const next=existing?personalLandmarks.map(p=>p.id===lm.id?lm:p):[...personalLandmarks,lm];
+    if(!savePersonalLandmarks(next)){landmarkStatus.textContent='Landmark not saved. Your entries are still here; try again.';return;}
+    landmarkLayer.addTo(map);setLayerButton(document.getElementById('landmarksToggle'),true);closeLandmarkEditor();toast('Landmark saved on this device.');
+  };
+  document.addEventListener('click',async e=>{
+    const button=e.target.closest('[data-edit-landmark],[data-show-landmark],[data-delete-landmark],[data-submit-landmark]');if(!button)return;
+    const id=button.dataset.editLandmark||button.dataset.showLandmark||button.dataset.deleteLandmark||button.dataset.submitLandmark;const lm=personalLandmarks.find(p=>p.id===id);if(!lm)return;
+    if(button.hasAttribute('data-edit-landmark'))showLandmarkEditor(id);
+    if(button.hasAttribute('data-show-landmark')){cancelLandmarkPicking();showView('fieldView');centerOnNextFix=false;landmarkLayer.addTo(map);setLayerButton(document.getElementById('landmarksToggle'),true);map.setView([lm.lat,lm.lng],16);}
+    if(button.hasAttribute('data-delete-landmark')&&confirm(`Remove “${lm.name}” from this device?${lm.submissionId?' Your submitted version will remain with DRIFT.':''}`))savePersonalLandmarks(personalLandmarks.filter(p=>p.id!==id));
+    if(button.hasAttribute('data-submit-landmark'))await submitPersonalLandmark(lm,button);
+  });
+  document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{if(pickingLandmark)cancelLandmarkPicking();}));
+}
+async function submitPersonalLandmark(lm,button){
+  if(lm.submissionId||!confirm(`Submit “${lm.name}” for review? Its name, notes, type and exact pin location will be sent to DRIFT. It becomes public only after approval.`))return;
+  button.disabled=true;button.textContent='SUBMITTING…';
+  try{
+    const response=await fetch('/api/landmarks',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:lm.id,name:lm.name,note:lm.note,kind:lm.kind,lat:lm.lat,lng:lm.lng})});
+    const result=await response.json();if(!response.ok||!result.id)throw new Error('Could not submit');
+    const next=personalLandmarks.map(p=>p.id===lm.id?{...p,submissionId:result.id}:p);
+    if(savePersonalLandmarks(next))toast('Submitted for review. Your landmark is still saved on this device.');else toast('Submitted, but status could not save on this device. Retrying will not create a duplicate.');
+  }catch{button.disabled=false;button.textContent='SUBMIT FOR REVIEW';toast('Not submitted. Your landmark is saved on this device; try again when connected.');}
+}
+async function loadCommunityLandmarks(){
+  try{const response=await fetch('/api/landmarks');if(!response.ok)return;const data=await response.json();if(!Array.isArray(data.landmarks))return;communityLandmarks=data.landmarks.filter(validLandmark).map(lm=>({...lm,source:'community',sensitive:lm.kind==='BURIAL'}));renderLandmarks();}catch{}
+}
 
 // Show Quick Start on every fresh opening, including returning visitors.
 // Entering the field never depends on browser storage or requests location.
@@ -733,3 +826,4 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   loadSharedActivity();
   updateBackendStatus();
   window.addEventListener('online',()=>{loadSharedActivity();updateBackendStatus();});
+
