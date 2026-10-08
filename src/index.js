@@ -134,11 +134,11 @@ async function createIntercept(request,env){
   return json({ok:true,id,signal_id:signalId,verified:true,public:!!isPublic},201);
 }
 
-const LANDMARK_KINDS=new Set(['LANDMARK','PARK','WATER','HISTORY','SHELTER','BURIAL']);
-async function listLandmarks(env){
+const LANDMARK_KINDS=new Set(['COOL_SPOT','GEOLOGY','ROCK','BIRD','PLANT','PLACE','LANDMARK','PARK','WATER','HISTORY','SHELTER','BURIAL']);
+async function listLandmarks(env,key='landmarks'){
   await ensureSchema(env);
   const {results=[]}=await env.DB.prepare(`SELECT id,name,kind,note,lat,lng FROM landmarks WHERE status='approved' ORDER BY created_at DESC LIMIT 500`).all();
-  return json({landmarks:results});
+  return json({[key]:results});
 }
 async function createLandmark(request,env){
   // Bound the actual body, including chunked requests without Content-Length.
@@ -197,6 +197,8 @@ async function api(request,env){
     return json({ok:true,database:!!env.DB,photos:!!env.PHOTOS,privacy:'location is verified in memory and exact coordinates are not stored with intercepts'});
   }
   if(!env.DB)return json({error:'database_unavailable'},503);
+  if(path==='/api/waypoints'&&request.method==='GET')return listLandmarks(env,'waypoints');
+  if(path==='/api/waypoints'&&request.method==='POST')return createLandmark(request,env);
   if(path==='/api/landmarks'&&request.method==='GET')return listLandmarks(env);
   if(path==='/api/landmarks'&&request.method==='POST')return createLandmark(request,env);
   if(path==='/api/signals'&&request.method==='GET')return listSignals(env);

@@ -27,9 +27,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css?v=21" />
+  <link rel="stylesheet" href="styles.css?v=22" />
 </head>
-<body data-release="21">
+<body data-release="22">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
@@ -53,7 +53,6 @@
       <div id="map" aria-label="DRIFT Hines Park map"></div>
       <div class="map-shade"></div>
       <div class="hines-controls" aria-label="Hines Park navigation">
-        <button id="hinesHomeBtn" class="hines-control" type="button">RESET MAP</button>
         <select id="hinesPlaceSelect" class="hines-control" aria-label="Choose a Hines Park place">
           <option value="">PLACES ▾</option>
           <option value="cass-benton" data-lat="42.41545" data-lng="-83.4766">CASS BENTON</option>
@@ -69,6 +68,7 @@
         </select>
       </div>
       <div class="map-head">
+        <details id="mapOptions" class="map-menu"><summary>MAP OPTIONS</summary><div class="map-menu-body">
         <div class="eyebrow">HINES PARK</div>
         <div class="statusline"><span class="pulse"></span><span id="geoStatus">LOCATION OFF</span></div>
         <p id="locationNotice" class="location-notice" role="status" hidden></p>
@@ -76,30 +76,35 @@
           <button class="chip map-style active" data-map-style="minimal" type="button" aria-pressed="true">TRAILS ONLY</button>
           <button class="chip map-style" data-map-style="standard" type="button" aria-pressed="false">STREET MAP</button>
         </div>
-        <details class="map-overlays">
-          <summary>MAP LAYERS</summary>
+        <div class="map-overlays">
+          <p class="map-group-label">LAYERS</p>
           <div class="layer-chips" aria-label="Map layers">
             <button id="mtbToggle" class="chip active" type="button" aria-pressed="true">BIKE TRAILS</button>
             <button id="pavedToggle" class="chip active" type="button" aria-pressed="true">PAVED PATHS</button>
             <button id="signalsToggle" class="chip" type="button" aria-pressed="false">FINDS</button>
             <button id="landmarksToggle" class="chip" type="button" aria-pressed="false">LANDMARKS</button>
+            <button id="waypointsToggle" class="chip" type="button" aria-pressed="false">WAYPOINTS</button>
             <button id="citiesToggle" class="chip" type="button" aria-pressed="false">CITIES</button>
           </div>
-        </details>
-        <button id="addLandmarkBtn" class="chip" type="button">ADD LANDMARK</button>
+        </div>
         <span id="trailMapStatus" role="status">LOADING TRAILS…</span>
-      </div>
-
-      <aside id="landmarkPicker" class="landmark-picker" hidden aria-label="Choose landmark location"><p id="landmarkPickerStatus" role="status">Tap the map to place a pin, or drag the pin to adjust it.</p><button id="confirmLandmarkPin" class="mini-primary" type="button" disabled>USE THIS PIN</button><button id="cancelLandmarkPin" class="chip" type="button">CANCEL</button></aside>
-
+        <button id="hinesHomeBtn" class="hines-control" type="button">RESET MAP</button>
       <aside id="startHint" class="start-hint" aria-label="How to start">
         <div class="eyebrow">START HERE</div>
-        <strong>Choose a trail, or turn on FINDS in MAP LAYERS to follow a clue.</strong>
+        <strong>Choose a trail, or turn on FINDS in MAP OPTIONS to follow a clue.</strong>
         <p>Browse without location. Tap LOCATE when you want to see where you are.</p>
         <button id="dismissStartHint" type="button">GOT IT</button>
       </aside>
+        </div></details>
+        <button id="addWaypointBtn" class="chip" type="button">ADD WAYPOINT</button>
+      </div>
+
+      <aside id="waypointPicker" class="waypoint-picker" hidden aria-label="Choose waypoint location"><p id="waypointPickerStatus" role="status">Tap the map to place a pin, or drag the pin to adjust it.</p><button id="confirmWaypointPin" class="mini-primary" type="button" disabled>USE THIS PIN</button><button id="cancelWaypointPin" class="chip" type="button">CANCEL</button></aside>
+
+
 
       <aside id="tracker" class="tracker" aria-label="Walking path tracker">
+        <details id="routeControls"><summary id="routeSummary">ROUTE</summary><div class="route-controls-body">
         <div class="tracker-top">
           <div>
             <div class="eyebrow">ROUTE RECORDING</div>
@@ -112,6 +117,7 @@
           <button id="trackStopBtn" type="button" disabled>SAVE ROUTE</button>
           <button id="trackClearBtn" type="button">CLEAR ROUTE</button>
         </div>
+        </div></details>
       </aside>
 
     </section>
@@ -131,28 +137,12 @@
     </section>
 
     <section id="archiveView" class="view">
-      <section class="device-profile" aria-labelledby="deviceProfileTitle">
-        <h2 id="deviceProfileTitle">YOUR DEVICE PROFILE</h2>
-        <p>No login needed. Your nickname, finds, favorites, landmarks, and saved routes belong to this browser on this device—not a synced online account. Clearing site data can erase them.</p>
-        <form id="deviceProfileForm">
-          <label for="deviceNickname">Nickname (optional)</label>
-          <input id="deviceNickname" maxlength="40" autocomplete="nickname" placeholder="Explorer" />
-          <button class="mini-primary" type="submit">SAVE PROFILE</button>
-        </form>
-        <label class="export-check"><input id="exportCoordinates" type="checkbox" /> Include exact route and landmark coordinates in my export</label>
-        <p>Exports contain your profile, personal finds, favorites, landmark descriptions, and route summaries. Check the box only if you want precise paths and landmark locations included. Keep that file private. Public posts and uploaded photos are not included.</p>
-        <button id="exportDataBtn" class="mini-primary" type="button">EXPORT MY DATA</button>
-        <p id="deviceProfileStatus" role="status"></p>
-      </section>
-      <div class="section-head">
-        <div class="eyebrow">PERSONAL ARCHIVE</div>
-        <h2>YOUR FINDS + ROUTES</h2>
-        <p class="lede">Revisit the places you found and the routes you recorded. Your saved items stay on this device. Public discoveries appear separately below.</p>
-      </div>
+
+      <div class="section-head"><h2>FIELD JOURNAL</h2><p class="lede">Cool spots and things you noticed. Add dated notes when you return.</p><button id="journalAddWaypointBtn" class="chip" type="button">ADD WAYPOINT</button></div>
+      <div id="savedWaypoints" class="archive-list"></div>
+      <div class="section-head compact"><div class="eyebrow">YOUR FINDS + ROUTES</div></div>
       <div id="archiveStats" class="stats"></div>
       <div id="archiveList" class="archive-list"></div>
-      <div class="section-head compact"><h2>YOUR LANDMARKS</h2><p class="lede">Saved on this device. Submit a landmark for review if you want to share it.</p></div>
-      <div id="savedLandmarks" class="archive-list"></div>
       <div class="section-head compact"><div class="eyebrow">SAVED ROUTES</div></div>
       <div id="routeList" class="archive-list"></div>
       <div class="section-head compact">
@@ -160,6 +150,21 @@
         <h2>SHARED FINDS</h2>
       </div>
       <div id="sharedActivity" class="shared-section"><div class="lockbox">ACQUIRING SHARED FIELD LOG…</div></div>
+      <details class="journal-settings"><summary>Device profile + export</summary>
+      <section class="device-profile" aria-labelledby="deviceProfileTitle">
+        <h2 id="deviceProfileTitle">YOUR DEVICE PROFILE</h2>
+        <p>No login needed. Your nickname, finds, favorites, waypoints, and saved routes belong to this browser on this device—not a synced online account. Clearing site data can erase them.</p>
+        <form id="deviceProfileForm">
+          <label for="deviceNickname">Nickname (optional)</label>
+          <input id="deviceNickname" maxlength="40" autocomplete="nickname" placeholder="Explorer" />
+          <button class="mini-primary" type="submit">SAVE PROFILE</button>
+        </form>
+        <label class="export-check"><input id="exportCoordinates" type="checkbox" /> Include exact route and waypoint coordinates in my export</label>
+        <p>Exports contain your profile, personal finds, favorites, waypoints and private journal notes, and route summaries. Check the box only if you want precise paths and waypoint locations included. Keep that file private. Public posts and uploaded photos are not included.</p>
+        <button id="exportDataBtn" class="mini-primary" type="button">EXPORT MY DATA</button>
+        <p id="deviceProfileStatus" role="status"></p>
+      </section>
+      </details>
     </section>
 
     <section id="infoView" class="view">
@@ -249,7 +254,7 @@
   <nav class="tabbar" aria-label="App navigation">
     <button class="tab active" data-view="fieldView"><span>⌖</span>MAP</button>
     <button class="tab" data-view="trailsView"><span>⌁</span>TRAILS</button>
-    <button class="tab" data-view="archiveView"><span>▤</span>SAVED</button>
+    <button class="tab" data-view="archiveView"><span>▤</span>JOURNAL</button>
     <button class="tab" data-view="infoView"><span>⋯</span>ABOUT</button>
   </nav>
 
@@ -263,13 +268,13 @@
       <div class="quick-list">
         <p><strong>DRIFT is a map for curious walks and rides, with clues to music and creative finds around Hines Park.</strong></p>
         <p>A <strong>drift</strong> is an outing led by curiosity: take a different turn, linger by the water, and notice the sounds, light, and details you usually pass.</p>
-        <p>Come for a new trail, a small treasure hunt, or a reason to get outside. Hear nøfuture’s place-linked sounds where the landscape becomes part of the experience. You can simply explore; recording your route is optional.</p>
+        <p>Come for a new trail, a small treasure hunt, or a reason to get outside. Hear nøfuture’s place-linked sounds where the landscape becomes part of the experience. You can simply explore; recording your route is optional. Landmarks are named places; waypoints are cool spots, rocks, plants, geological features, or wildlife sightings you notice. Keep dated observations in your private JOURNAL.</p>
         <ol class="start-steps">
           <li><strong>Pick somewhere to explore.</strong> Open TRAILS for routes and access points, or PLACES for a park landmark.</li>
-          <li><strong>Follow a clue.</strong> Turn on FINDS in MAP LAYERS, then tap a marker for its clue. LOCATE can show where you are.</li>
+          <li><strong>Follow a clue.</strong> Turn on FINDS in MAP OPTIONS, then tap a marker for its clue. LOCATE can show where you are.</li>
           <li><strong>Discover the sound.</strong> A clue may lead to music or a creative find. You might also encounter a DRIFT NFC card: scanning one could open a place-linked sound, a clue, or a project page. The destination depends on that card. Cards are optional; one is not promised at every marker.</li>
         </ol>
-        <p><strong>ENTER THE FIELD opens the map.</strong> RECORD ROUTE saves the path of your walk or ride to SAVED. Location is optional for browsing; recording and nearby-find checks need precise location.</p>
+        <p><strong>ENTER THE FIELD opens the map.</strong> RECORD ROUTE saves the path of your walk or ride to JOURNAL. Location is optional for browsing; recording and nearby-find checks need precise location.</p>
         <p>Your routes and personal finds stay on this device. Sharing a find is optional.</p>
         <button id="learnConceptBtn" class="inline-btn" type="button">WHY FOLLOW A CLUE? →</button>
         <p><a href="features.html">Explore all DRIFT features →</a></p>
@@ -280,23 +285,32 @@
     </div>
   </div>
 
-  <dialog id="landmarkDialog" class="landmark-dialog" aria-labelledby="landmarkTitle">
-    <form id="landmarkForm">
-      <div class="modal-head"><h2 id="landmarkTitle">Add a landmark</h2><button id="closeLandmarkDialog" class="chip" type="button" aria-label="Close landmark editor">CLOSE</button></div>
-      <p>Found a place that’s missing? Save it to your own map.</p>
-      <label for="landmarkName">Name</label><input id="landmarkName" required maxlength="80" autocomplete="off" />
-      <label for="landmarkKind">Type</label><select id="landmarkKind"><option value="LANDMARK">Landmark</option><option value="PARK">Park</option><option value="WATER">Water</option><option value="HISTORY">History</option><option value="SHELTER">Shelter</option><option value="BURIAL">Cemetery or memorial</option></select>
-      <label for="landmarkNote">Notes (optional)</label><textarea id="landmarkNote" maxlength="500" rows="3" placeholder="What makes this place worth noticing?"></textarea>
-      <fieldset><legend>Location</legend><div class="landmark-actions"><button id="pickLandmarkLocation" class="chip" type="button">CHOOSE ON MAP</button><button id="useLandmarkLocation" class="chip" type="button">USE MY LOCATION</button></div><p>Use a pin, or enter coordinates. Location access is optional.</p>
-      <div class="form-grid"><div><label for="landmarkLat">Latitude</label><input id="landmarkLat" type="number" step="any" min="-90" max="90" required inputmode="decimal" /></div><div><label for="landmarkLng">Longitude</label><input id="landmarkLng" type="number" step="any" min="-180" max="180" required inputmode="decimal" /></div></div></fieldset>
-      <p id="landmarkFormStatus" role="status"></p>
-      <p class="landmark-local-note">This saves on your device only. You can submit it for review from SAVED. A submitted landmark includes its exact pin location and appears publicly only after approval.</p>
-      <div class="landmark-actions"><button id="saveLandmarkBtn" class="mini-primary" type="submit">SAVE LANDMARK</button><button id="cancelLandmarkDialog" class="chip" type="button">CANCEL</button></div>
+  <dialog id="waypointDialog" class="waypoint-dialog" aria-labelledby="waypointTitle">
+    <form id="waypointForm">
+      <div class="modal-head"><h2 id="waypointTitle">Add a waypoint</h2><button id="closeWaypointDialog" class="chip" type="button" aria-label="Close waypoint editor">CLOSE</button></div>
+      <p>Save something you noticed in the park.</p>
+      <label for="waypointName">Name</label><input id="waypointName" required maxlength="80" autocomplete="off" />
+      <label for="waypointKind">Type</label><select id="waypointKind"><option value="COOL_SPOT">Cool spot</option><option value="GEOLOGY">Geological feature</option><option value="ROCK">Rock</option><option value="BIRD">Bird sighting</option><option value="PLANT">Plant</option><option value="PLACE" hidden>Place</option><option value="LANDMARK" hidden>Place (saved earlier)</option><option value="PARK" hidden>Park</option><option value="WATER" hidden>Water</option><option value="HISTORY" hidden>History</option><option value="SHELTER" hidden>Shelter</option><option value="BURIAL" hidden>Cemetery or memorial</option></select>
+      <label for="waypointNote">Description (optional)</label><textarea id="waypointNote" maxlength="500" rows="3" placeholder="What did you find here?"></textarea>
+      <fieldset><legend>Location</legend><div class="waypoint-actions"><button id="pickWaypointLocation" class="chip" type="button">CHOOSE ON MAP</button><button id="useWaypointLocation" class="chip" type="button">USE MY LOCATION</button></div><p>Choose the spot where you noticed it. Birds and other sightings record an observation, not a permanent location.</p>
+      <details class="coordinate-details"><summary>Enter coordinates</summary><div class="form-grid"><div><label for="waypointLat">Latitude</label><input id="waypointLat" type="number" step="any" min="-90" max="90" required inputmode="decimal" /></div><div><label for="waypointLng">Longitude</label><input id="waypointLng" type="number" step="any" min="-180" max="180" required inputmode="decimal" /></div></div></details></fieldset>
+      <p id="waypointFormStatus" role="status"></p>
+      <p class="waypoint-local-note">This saves on your device only. You can submit it for review from JOURNAL. A submitted waypoint includes its exact pin location and appears publicly only after approval.</p>
+      <div class="waypoint-actions"><button id="saveWaypointBtn" class="mini-primary" type="submit">SAVE WAYPOINT</button><button id="cancelWaypointDialog" class="chip" type="button">CANCEL</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="journalDialog" class="waypoint-dialog" aria-labelledby="journalTitle">
+    <form id="journalEntryForm">
+      <div class="modal-head"><div><div class="eyebrow">PRIVATE JOURNAL NOTE</div><h2 id="journalTitle"></h2></div><button id="closeJournalDialog" class="chip" type="button" aria-label="Close journal note">CLOSE</button></div>
+      <label for="journalText">What did you notice?</label><textarea id="journalText" required maxlength="2000" rows="5" autofocus placeholder="A bird call, a new leaf, the light on a rock…"></textarea>
+      <label for="journalDate">Observed at</label><input id="journalDate" type="datetime-local" required />
+      <p id="journalEntryStatus" role="status"></p><button class="mini-primary" type="submit">SAVE PRIVATE NOTE</button>
     </form>
   </dialog>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
 </body>
 </html>
 

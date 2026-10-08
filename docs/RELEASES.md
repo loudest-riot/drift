@@ -1,3 +1,11 @@
+## Release 22 — Waypoints + field journal (October 8, 2026)
+
+- Curated landmarks remain named places; user waypoints have a separate map layer. Types include cool spot, geological feature, rock, bird sighting, plant, and place. Existing device records and submissions are retained using their current storage identity and table.
+- JOURNAL puts waypoints first. Each waypoint supports multiple private, dated observation notes and note removal. Journal entries are included in device exports, with waypoint coordinates still opt-in, and are never sent in a waypoint submission.
+- Map options nests layers, map styles, reset, status and start-help. Route nests record/save/clear controls and shows RECORDING when closed during a walk. Both disclosures default closed. Profile/export and coordinate entry are also collapsed to fit a phone screen.
+- `/api/waypoints` accepts the new types and exposes only approved submissions. The previous `/api/landmarks` route remains compatible with saved clients. Review still uses the existing authenticated D1 console and `landmarks` table; the release 21 review instructions apply.
+- Bird sightings mark an observation spot, not a permanent location. No new image uploads, accounts, or background location access.
+
 ## Release 21 — Personal landmarks (October 8, 2026)
 
 - Add a named landmark with optional notes and a type. Choose a draggable map pin, enter coordinates, or explicitly request a precise device location.

@@ -11,3 +11,13 @@ assert.equal((await post({...valid,note:'x'.repeat(9000)})).status,413);
 db.prepare("UPDATE landmarks SET status='approved'").run();await post({...valid,name:'Unauthorized overwrite'});assert.equal(db.prepare('SELECT name FROM landmarks').get().name,'Woodland');r=await worker.fetch(new Request('https://drift.test/api/landmarks'),env);assert.equal((await r.json()).landmarks.length,1);
 db.prepare("UPDATE landmarks SET status='rejected'").run();r=await worker.fetch(new Request('https://drift.test/api/landmarks'),env);assert.equal((await r.json()).landmarks.length,0);
 console.log('PASS SQL schema, persistence, pending-only submission, approved-only listing, idempotency, immutable submitted copy, input validation and body limits');
+
+// New observations use the waypoint alias; legacy landmark clients remain compatible.
+for(const kind of ['COOL_SPOT','GEOLOGY','ROCK','BIRD','PLANT','PLACE']){
+  const body={...valid,id:crypto.randomUUID(),kind};
+  const res=await worker.fetch(new Request('https://drift.test/api/waypoints',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),env);
+  assert.equal(res.status,201);
+}
+const waypointResponse=await worker.fetch(new Request('https://drift.test/api/waypoints'),env);
+assert.deepEqual((await waypointResponse.json()).waypoints,[]);
+console.log('PASS all waypoint kinds, legacy compatibility and private review visibility');

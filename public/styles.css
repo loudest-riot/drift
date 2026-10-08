@@ -212,18 +212,33 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #b5d
 
 
 /* Personal landmarks extend the existing quiet map controls. */
-#addLandmarkBtn{pointer-events:auto;margin-top:8px}
-.landmark-dialog{width:min(540px,calc(100% - 24px));max-height:90dvh;overflow:auto;border:1px solid #dddeda;border-radius:16px;padding:20px;background:#f3f3ef;color:#171a18}
-.landmark-dialog::backdrop{background:rgba(10,12,11,.7)}
-.landmark-dialog h2{font-size:24px;margin:0}.landmark-dialog p{font-size:16px;line-height:1.5}
-.landmark-dialog label,.landmark-dialog legend{display:block;font-size:14px;margin:12px 0 5px}
-.landmark-dialog input,.landmark-dialog textarea,.landmark-dialog select{width:100%;min-height:44px;padding:10px;border:1px solid #b8beb5;border-radius:10px;background:#fff;color:#171a18;font:inherit;font-size:16px}
-.landmark-dialog fieldset{min-width:0;border:1px solid #dddeda;border-radius:12px;margin:16px 0;padding:12px}
-.landmark-dialog .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.landmark-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.landmark-actions button{min-height:44px;font-size:14px;white-space:normal}.landmark-local-note{color:#515b51}.landmark-dialog .modal-head{flex-wrap:wrap}
-.landmark-picker[hidden]{display:none}.landmark-picker{position:absolute;z-index:1001;left:12px;right:12px;bottom:16px;padding:12px;border:1px solid #b8beb5;border-radius:14px;background:#f3f3ef;color:#171a18;pointer-events:auto;box-shadow:0 3px 16px #0003}
-.landmark-picker p{font-size:14px;margin:0 0 10px;line-height:1.4}.landmark-picker button{font-size:14px}
-.picking-landmark #tracker,.picking-landmark #startHint,.picking-landmark .map-head,.picking-landmark .hines-controls{display:none}.picking-landmark #map{cursor:crosshair}
-.landmark-draft-dot{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#202522;color:#fff;border:3px solid #b5d12d;font-size:22px;box-shadow:0 2px 8px #0005}
-#savedLandmarks p{font-size:16px;line-height:1.5;overflow-wrap:anywhere}#savedLandmarks h3{overflow-wrap:anywhere}
-@media(max-width:360px){.landmark-dialog{padding:14px}.landmark-dialog .form-grid{grid-template-columns:1fr}}
+#addWaypointBtn{pointer-events:auto;margin-top:8px}
+.waypoint-dialog{width:min(540px,calc(100% - 24px));max-height:90dvh;overflow:auto;border:1px solid #dddeda;border-radius:16px;padding:20px;background:#f3f3ef;color:#171a18}
+.waypoint-dialog::backdrop{background:rgba(10,12,11,.7)}
+.waypoint-dialog h2{font-size:24px;margin:0}.waypoint-dialog p{font-size:16px;line-height:1.5}
+.waypoint-dialog label,.waypoint-dialog legend{display:block;font-size:14px;margin:12px 0 5px}
+.waypoint-dialog input,.waypoint-dialog textarea,.waypoint-dialog select{width:100%;min-height:44px;padding:10px;border:1px solid #b8beb5;border-radius:10px;background:#fff;color:#171a18;font:inherit;font-size:16px}
+.waypoint-dialog fieldset{min-width:0;border:1px solid #dddeda;border-radius:12px;margin:16px 0;padding:12px}
+.waypoint-dialog .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.waypoint-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.waypoint-actions button{min-height:44px;font-size:14px;white-space:normal}.waypoint-local-note{color:#515b51}.waypoint-dialog .modal-head{flex-wrap:wrap}
+.waypoint-picker[hidden]{display:none}.waypoint-picker{position:absolute;z-index:1001;left:12px;right:12px;bottom:16px;padding:12px;border:1px solid #b8beb5;border-radius:14px;background:#f3f3ef;color:#171a18;pointer-events:auto;box-shadow:0 3px 16px #0003}
+.waypoint-picker p{font-size:14px;margin:0 0 10px;line-height:1.4}.waypoint-picker button{font-size:14px}
+.picking-waypoint #tracker,.picking-waypoint #startHint,.picking-waypoint .map-head,.picking-waypoint .hines-controls{display:none}.picking-waypoint #map{cursor:crosshair}
+.waypoint-draft-dot{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#202522;color:#fff;border:3px solid #b5d12d;font-size:22px;box-shadow:0 2px 8px #0005}
+#savedWaypoints p{font-size:16px;line-height:1.5;overflow-wrap:anywhere}#savedWaypoints h3{overflow-wrap:anywhere}
+@media(max-width:360px){.waypoint-dialog{padding:14px}.waypoint-dialog .form-grid{grid-template-columns:1fr}}
+
+.waypoint-dot{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;color:#344d36;border:2px solid #344d36;font-size:14px;font-weight:700}
+.waypoint-card details{margin-top:10px}.waypoint-card summary,.coordinate-details summary,.journal-settings>summary{min-height:44px;display:flex;align-items:center;font-size:14px;cursor:pointer;list-style:revert}
+.journal-entry{padding:14px 0;border-top:1px solid #dddeda}.journal-entry time{font-size:14px;color:#515b51}.journal-entry p{white-space:pre-wrap}.journal-privacy{font-size:14px!important;color:#515b51}
+.journal-settings{margin:0 18px 24px}.journal-settings .device-profile{margin:0}.waypoint-card .waypoint-actions{margin-top:8px}
+#journalDialog textarea{font-size:16px;line-height:1.5}.waypoint-dialog{max-height:calc(100dvh - 24px);padding:16px}.waypoint-dialog p{font-size:14px}.waypoint-dialog label{margin-top:10px}.waypoint-dialog fieldset{margin:10px 0;padding:10px}
+
+/* iPhone: collapsed controls leave the field visible. */
+.map-head{width:auto;max-width:calc(100% - 184px);padding:6px;z-index:700}.map-menu>summary,#routeSummary{display:flex;align-items:center;min-height:44px;padding:8px;font-size:14px;font-weight:700;cursor:pointer;list-style:revert}
+.map-menu-body{max-height:60dvh;overflow:auto;padding:6px;min-width:0}.map-head:has(#mapOptions[open]){width:min(290px,calc(100% - 24px));max-width:calc(100% - 24px)}
+.map-menu-body .chip{font-size:14px;min-height:44px}.map-group-label{font-size:14px;margin:12px 0 4px}.map-menu-body .hines-control{width:100%;font-size:14px;margin-top:10px}
+#addWaypointBtn{width:100%;margin-top:4px;font-size:14px}.map-menu-body .start-hint{position:static;margin-top:10px;box-shadow:none;display:block;padding:8px}.map-menu-body .start-hint.dismissed{display:none}.map-menu-body .start-hint strong{display:block;font-size:14px}.map-menu-body .start-hint button{margin-top:8px;font-size:14px;min-height:44px}
+#tracker{top:auto;bottom:12px;right:12px;width:auto;max-width:calc(100% - 24px);padding:6px}
+#tracker .route-controls-body{width:min(290px,calc(100vw - 48px));max-height:45dvh;overflow:auto;padding:8px}
+#tracker .tracker-top>div{display:block}#tracker .track-stats,#tracker .track-actions{display:flex}#tracker .tracker-top strong,#tracker .track-stats,#tracker .track-actions button,#tracker .mini-primary{font-size:14px}#tracker .eyebrow{font-size:12px}
