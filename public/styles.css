@@ -1,3 +1,20 @@
+/* Walter (W2): a quiet, readable remembrance using DRIFT's existing palette. */
+.dedication-link a{color:var(--ink);font-size:13px;line-height:1.6;text-underline-offset:4px}
+body.memorial-page{overflow:auto}
+.memorial-page .memorial-wrap{height:auto;max-width:760px}
+.memorial-heading{padding:14px 0 20px}
+.memorial-heading .eyebrow{font-size:11px;line-height:1.7;letter-spacing:.13em}
+.memorial-heading h1{font-size:clamp(28px,6vw,42px);line-height:1.2;letter-spacing:-.025em;margin:12px 0}
+.memorial-heading h1 span{display:block;font-size:.55em;letter-spacing:.08em;color:var(--muted);margin-top:10px}
+.memorial-wrap .memorial-dates{font-size:15px;color:var(--ink);letter-spacing:.12em;margin-bottom:0}
+.memorial-photo{margin:0 0 30px;border:1px solid var(--line)}
+.memorial-photo img{display:block;width:100%;height:auto}
+.memorial-copy{max-width:65ch}
+.memorial-wrap .memorial-copy p{font-family:Georgia,"Times New Roman",serif;font-size:clamp(18px,2.5vw,21px);line-height:1.7;color:var(--ink);margin:0 0 24px}
+.memorial-wrap .memorial-copy .memorial-last{border-top:1px solid var(--line);padding-top:24px;margin-top:34px;font-style:italic}
+.memorial-wrap .memorial-copy .memorial-signature{font-family:inherit;font-size:13px;color:var(--muted)}
+.memorial-footer{border-top:1px solid var(--line);padding-top:22px;margin-top:36px;font-size:12px}
+.memorial-page a:focus-visible,.dedication-link a:focus-visible{outline:2px solid var(--cyan);outline-offset:5px}
 :root{
   --bg:#0a0c0b;--panel:#111512;--panel2:#171b18;--ink:#f1f3ed;--muted:#9da79f;
   --line:#2a302b;--green:#a7ff4f;--amber:#ffb55e;--danger:#ff6f6f;--cyan:#7be7dd;
