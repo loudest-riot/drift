@@ -13,7 +13,7 @@
 .photos-intro{font-size:clamp(23px,4vw,36px);line-height:1.2;letter-spacing:-.03em;max-width:760px;margin:0 0 14px}
 .photos-sub{font-size:14px;line-height:1.7;max-width:600px;color:var(--quiet);margin:0 0 43px}
 .photos-toolbar{display:flex;flex-wrap:wrap;gap:7px;border-top:1px solid var(--line);padding:18px 0 8px}
-.photo-filter{border:1px solid #bfc6bc;padding:12px 15px;min-height:44px;background:transparent;color:#3e4940;cursor:pointer;font:700 10px/1.2 inherit;letter-spacing:.08em;border-radius:5px}
+.photo-filter{border:1px solid #bfc6bc;padding:12px 15px;min-height:44px;background:transparent;color:#3e4940;cursor:pointer;font-weight:700;font-size:10px;line-height:1.2;font-family:inherit;letter-spacing:.08em;border-radius:5px}
 .photo-filter.active,.photo-filter[aria-pressed=true]{background:var(--green);border-color:var(--green);color:white}
 .photo-count{margin:11px 0 22px;color:var(--quiet);font-size:11px;letter-spacing:.09em;font-weight:700}
 .photo-status{border-left:3px solid #8c9e56;padding:10px 14px;margin:10px 0 20px;background:#e8ebe3;color:#344d36;font-size:13px;line-height:1.5}
