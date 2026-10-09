@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f3f3ef" />
+  <meta name="description" content="DRIFT public photo log: field observations, Hines Park landscapes, and opt-in photographs shared with discoveries." />
+  <link rel="canonical" href="https://drift.loudestriot.com/photo-log.html" />
+  <link rel="icon" href="icons/signal-glyph-192.png" />
+  <title>Photo Log // DRIFT</title>
+  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="photo-log.css?v=24" />
+</head>
+<body class="photo-log-page" data-release="24">
+  <main class="photos-wrap">
+    <header class="photos-top">
+      <a class="photos-back" href="./">← DRIFT / MAP</a>
+      <a class="photos-signal" href="https://go.loudestriot.com" aria-label="Loudest Riot signal portal"><img src="icons/signal-glyph-180.png" alt="" width="40" height="40" /></a>
+    </header>
+    <div class="photos-kicker">DISTRIBUTED RELAYS IN FIELD TERRAIN // VISUAL ARCHIVE</div>
+    <h1>PHOTO<br>LOG<span>.</span></h1>
+    <p class="photos-intro">Fragments from the field. Water, woods, strange little discoveries and the things worth stopping for.</p>
+    <p class="photos-sub">Photographs selected for the archive and pictures that visitors choose to share with their verified field finds. Private journals are never included.</p>
+
+    <div class="photos-toolbar" role="group" aria-label="Filter photo log">
+      <button class="photo-filter active" type="button" data-filter="all" aria-pressed="true">ALL PHOTOS</button>
+      <button class="photo-filter" type="button" data-filter="dispatch" aria-pressed="false">FIELD DISPATCHES</button>
+      <button class="photo-filter" type="button" data-filter="find" aria-pressed="false">SHARED FINDS</button>
+    </div>
+    <p id="photoCount" class="photo-count" aria-live="polite">ACQUIRING PHOTOGRAPHS…</p>
+    <p id="photoStatus" class="photo-status" role="status" hidden></p>
+    <section id="photoGrid" class="photo-grid" aria-label="Public field photographs"></section>
+    <p id="photoEmpty" class="photo-empty" hidden>NO PHOTOGRAPHS HERE YET. THE FIELD IS STILL OPEN.</p>
+    <div class="load-photos"><button id="loadMorePhotos" type="button" hidden>LOAD MORE FIELD PHOTOS ↓</button></div>
+
+    <section class="photo-contribute" aria-labelledby="contributeTitle">
+      <div>
+        <div class="photos-kicker">SEND A FIELD TRANSMISSION</div>
+        <h2 id="contributeTitle">See something worth remembering?</h2>
+        <p>Attach a photograph when sharing a verified DRIFT find and explicitly choose public sharing, or send a photograph for consideration in the curated archive. Nothing from your private journal is uploaded automatically. Avoid revealing other people's identities or sensitive locations without permission.</p>
+      </div>
+      <div class="contribute-links">
+        <a href="./">ENTER THE FIELD ↗</a>
+        <a href="mailto:sounds@loudestriot.com?subject=DRIFT%20photo%20submission">SEND A PHOTO ↗</a>
+      </div>
+    </section>
+    <footer class="photos-footer">
+      <a href="field-log.html">PUBLIC FIELD LOG</a>
+      <a href="updates.html">RELEASE NOTES</a>
+      <a href="privacy.html">PRIVACY + FIELD DATA</a>
+    </footer>
+  </main>
+  <dialog id="photoViewer" class="photo-viewer" aria-label="Photograph viewer">
+    <div class="viewer-top">
+      <span class="viewer-index" id="viewerIndex"></span>
+      <button id="viewerClose" type="button" aria-label="Close photograph">CLOSE ×</button>
+    </div>
+    <div class="viewer-image-wrap"><img id="viewerImage" alt="" /></div>
+    <div class="viewer-bottom">
+      <button id="viewerPrev" type="button" aria-label="Previous photo">←</button>
+      <div class="viewer-caption">
+        <strong id="viewerPlace"></strong>
+        <p id="viewerText"></p>
+        <small id="viewerCredit"></small>
+      </div>
+      <button id="viewerNext" type="button" aria-label="Next photo">→</button>
+    </div>
+  </dialog>
+  <script src="photo-log.js?v=24" defer></script>
+</body>
+</html>
