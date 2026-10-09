@@ -41,6 +41,7 @@ const schemaStatements=[
     public INTEGER NOT NULL DEFAULT 0,
     verified INTEGER NOT NULL DEFAULT 1,
     photo_key TEXT,
+    photo_upload_token TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(signal_id) REFERENCES signals(id)
   )`,
@@ -65,6 +66,15 @@ function json(data,status=200,headers={}){
 async function ensureSchema(env){
   if(schemaReady||!env.DB)return;
   await env.DB.batch(schemaStatements.map(sql=>env.DB.prepare(sql)));
+  // Existing deployments predate one-time photo upload capabilities.
+  const columns=await env.DB.prepare('PRAGMA table_info(intercepts)').all();
+  if(!(columns.results||[]).some(c=>c.name==='photo_upload_token')){
+    try{await env.DB.prepare('ALTER TABLE intercepts ADD COLUMN photo_upload_token TEXT').run();}
+    catch(error){
+      const current=await env.DB.prepare('PRAGMA table_info(intercepts)').all();
+      if(!(current.results||[]).some(c=>c.name==='photo_upload_token'))throw error;
+    }
+  }
   schemaReady=true;
 }
 
@@ -96,14 +106,18 @@ async function listIntercepts(request,env){
   const url=new URL(request.url);
   const limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||20,1),50);
   const signalId=cleanText(url.searchParams.get('signal_id'),64);
+  const photosOnly=url.searchParams.get('photos_only')==='1';
+  const offset=Math.min(Math.max(Number(url.searchParams.get('offset'))||0,0),10000);
   let query=`SELECT i.id,i.signal_id,i.alias,i.note,i.photo_key,i.created_at,s.code,s.name
              FROM intercepts i JOIN signals s ON s.id=i.signal_id
-             WHERE i.public=1`;
+             WHERE i.public=1 AND i.verified=1`;
   const bindings=[];
   if(signalId){query+=' AND i.signal_id=?';bindings.push(signalId);}
-  query+=' ORDER BY i.created_at DESC LIMIT ?';bindings.push(limit);
+  if(photosOnly)query+=' AND i.photo_key IS NOT NULL';
+  query+=' ORDER BY i.created_at DESC, i.id DESC LIMIT ? OFFSET ?';
+  bindings.push(limit+1,offset);
   const {results=[]}=await env.DB.prepare(query).bind(...bindings).all();
-  return json({intercepts:results});
+  return json({intercepts:results.slice(0,limit),has_more:results.length>limit});
 }
 
 async function createIntercept(request,env){
@@ -128,10 +142,12 @@ async function createIntercept(request,env){
   const alias=cleanText(body.alias,40);
   const note=cleanText(body.note,500);
   const isPublic=body.public===true?1:0;
-  await env.DB.prepare(`INSERT INTO intercepts (id,signal_id,alias,note,public,verified) VALUES (?,?,?,?,?,1)`)
-    .bind(id,signalId,alias,note,isPublic).run();
+  const uploadToken=crypto.randomUUID()+crypto.randomUUID();
+  await env.DB.prepare(`INSERT INTO intercepts (id,signal_id,alias,note,public,verified,photo_upload_token) VALUES (?,?,?,?,?,1,?)`)
+    .bind(id,signalId,alias,note,isPublic,uploadToken).run();
 
-  return json({ok:true,id,signal_id:signalId,verified:true,public:!!isPublic},201);
+  // The upload capability is delivered once to the finder, never in the public API.
+  return json({ok:true,id,signal_id:signalId,verified:true,public:!!isPublic,photo_upload_token:uploadToken},201);
 }
 
 const LANDMARK_KINDS=new Set(['COOL_SPOT','GEOLOGY','ROCK','BIRD','PLANT','PLACE','LANDMARK','PARK','WATER','HISTORY','SHELTER','BURIAL']);
@@ -162,17 +178,31 @@ async function createLandmark(request,env){
 async function uploadPhoto(request,env,interceptId){
   if(!env.PHOTOS)return json({error:'photo_storage_unavailable'},503);
   await ensureSchema(env);
-  const row=await env.DB.prepare(`SELECT id FROM intercepts WHERE id=?`).bind(interceptId).first();
+  const row=await env.DB.prepare(`SELECT photo_key,photo_upload_token FROM intercepts WHERE id=?`).bind(interceptId).first();
   if(!row)return json({error:'intercept_not_found'},404);
-  const type=(request.headers.get('content-type')||'').toLowerCase();
-  if(!type.startsWith('image/'))return json({error:'image_required'},415);
+  const token=request.headers.get('x-drift-photo-token')||'';
+  if(!token||!row.photo_upload_token||token!==row.photo_upload_token)return json({error:'photo_upload_not_authorized'},403);
+  if(row.photo_key)return json({error:'photo_already_attached'},409);
+  const type=(request.headers.get('content-type')||'').toLowerCase().split(';')[0].trim();
+  if(!['image/jpeg','image/png','image/webp'].includes(type))return json({error:'supported_images_are_jpeg_png_webp'},415);
+  if(Number(request.headers.get('content-length')||0)>8*1024*1024)return json({error:'image_too_large'},413);
   const bytes=await request.arrayBuffer();
-  if(bytes.byteLength>8*1024*1024)return json({error:'image_too_large'},413);
-  const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
+  if(!bytes.byteLength||bytes.byteLength>8*1024*1024)return json({error:'image_too_large'},413);
+  const b=new Uint8Array(bytes);
+  const jpeg=b.length>=3&&b[0]===255&&b[1]===216&&b[2]===255;
+  const png=b.length>=8&&[137,80,78,71,13,10,26,10].every((n,i)=>b[i]===n);
+  const webp=b.length>=12&&[82,73,70,70].every((n,i)=>b[i]===n)&&[87,69,66,80].every((n,i)=>b[i+8]===n);
+  if(!(type==='image/jpeg'&&jpeg||type==='image/png'&&png||type==='image/webp'&&webp))return json({error:'invalid_image_data'},415);
+  const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
   const key=`intercepts/${interceptId}/${crypto.randomUUID()}.${ext}`;
   await env.PHOTOS.put(key,bytes,{httpMetadata:{contentType:type}});
-  await env.DB.prepare(`UPDATE intercepts SET photo_key=? WHERE id=?`).bind(key,interceptId).run();
-  return json({ok:true,photo_key:key},201);
+  const update=await env.DB.prepare(`UPDATE intercepts SET photo_key=?,photo_upload_token=NULL WHERE id=? AND photo_upload_token=? AND photo_key IS NULL`)
+    .bind(key,interceptId,token).run();
+  if(!update.meta?.changes){
+    await env.PHOTOS.delete(key);
+    return json({error:'photo_already_attached'},409);
+  }
+  return json({ok:true},201);
 }
 
 async function getPhoto(request,env,interceptId){
