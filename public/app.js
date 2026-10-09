@@ -745,12 +745,12 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
         <button class="shared-close" value="cancel" aria-label="Close">×</button>
         <div class="eyebrow">FIELD TRANSMISSION</div>
         <h2>SAVE FIND</h2>
-        <p class="shared-privacy-note">Your live location is sent only to verify that you are within the signal radius. Exact coordinates are not stored with the intercept.</p>
+        <p class="shared-privacy-note">Your location only verifies the find; exact coordinates are not stored with it. Public sharing is optional. Attached photos are resized and their embedded metadata removed before upload.</p>
         <input type="hidden" id="sharedSignalId" />
         <label>DISPLAY NAME <span>optional</span><input id="sharedAlias" maxlength="40" autocomplete="nickname" placeholder="anonymous is fine" /></label>
         <label>NOTE <span>optional</span><textarea id="sharedNote" maxlength="500" rows="4" placeholder="What did you notice?"></textarea></label>
         <label>PHOTO <span>optional</span><input id="sharedPhoto" type="file" accept="image/*" capture="environment" /></label>
-        <label class="share-check"><input id="sharedPublic" type="checkbox" /> <span>SHARE THIS FIND IN THE PUBLIC LOG</span></label>
+        <label class="share-check"><input id="sharedPublic" type="checkbox" /> <span>SHARE MY NAME, NOTE AND ANY ATTACHED PHOTO PUBLICLY IN THE FIELD LOG + PHOTO LOG</span></label>
         <div class="shared-actions">
           <button type="button" class="primary" id="sharedSubmit">SAVE FIND</button>
           <button value="cancel" class="secondary">CANCEL</button>
@@ -771,6 +771,31 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
     dialog.showModal();
   }
 
+  async function prepareFieldPhoto(file){
+    const objectUrl=URL.createObjectURL(file);
+    try{
+      const image=new Image();
+      await new Promise((resolve,reject)=>{
+        image.onload=resolve;
+        image.onerror=()=>reject(new Error('photo_cannot_decode'));
+        image.src=objectUrl;
+      });
+      const width=image.naturalWidth,height=image.naturalHeight;
+      if(!width||!height)throw new Error('photo_empty');
+      const scale=Math.min(1,2200/Math.max(width,height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(width*scale));
+      canvas.height=Math.max(1,Math.round(height*scale));
+      const context=canvas.getContext('2d');
+      if(!context)throw new Error('photo_canvas_unavailable');
+      context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);
+      context.drawImage(image,0,0,canvas.width,canvas.height);
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.86));
+      if(!blob||blob.size>8*1024*1024)throw new Error('photo_too_large');
+      return blob;
+    }finally{URL.revokeObjectURL(objectUrl);}
+  }
+
   async function submitSharedIntercept(){
     const dialog=document.getElementById('sharedInterceptDialog');
     const id=document.getElementById('sharedSignalId').value;
@@ -788,22 +813,37 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
       lng:userPos?.lng
     };
 
+    let photo=null;
+    try{
+      const source=document.getElementById('sharedPhoto').files?.[0];
+      if(source)photo=await prepareFieldPhoto(source);
+    }catch{
+      toast('PHOTO COULD NOT BE PREPARED // TRY ANOTHER IMAGE');
+      button.disabled=false;button.textContent='SAVE FIND';
+      return;
+    }
     try{
       if(!userPos)throw new Error('live_location_required');
       const response=await fetch('/api/intercepts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
       const data=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(data.error||`HTTP ${response.status}`);
 
-      const photo=document.getElementById('sharedPhoto').files?.[0];
+      let photoUploaded=true;
       if(photo&&data.id){
-        const photoResponse=await fetch(`/api/intercepts/${encodeURIComponent(data.id)}/photo`,{method:'POST',headers:{'content-type':photo.type||'image/jpeg'},body:photo});
-        if(!photoResponse.ok)toast('INTERCEPT SAVED // PHOTO COULD NOT UPLOAD');
+        try{
+          const photoResponse=await fetch(`/api/intercepts/${encodeURIComponent(data.id)}/photo`,{
+            method:'POST',
+            headers:{'content-type':'image/jpeg','x-drift-photo-token':data.photo_upload_token||''},
+            body:photo
+          });
+          photoUploaded=photoResponse.ok;
+        }catch{photoUploaded=false;}
       }
 
       localLog(signal);
       dialog.close();
       openSignal(signal.id);
-      toast(payload.public?'INTERCEPT TRANSMITTED TO DRIFT':'PRIVATE INTERCEPT SAVED');
+      toast(!photoUploaded?'FIND SAVED // PHOTO COULD NOT UPLOAD':payload.public?'INTERCEPT TRANSMITTED TO DRIFT':'PRIVATE INTERCEPT SAVED');
       loadSharedActivity();
     }catch(error){
       localLog(signal);
