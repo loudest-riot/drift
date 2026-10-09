@@ -1,7 +1,7 @@
-// Release 22: app code is network-first; only static images are cache-first.
-const CACHE='drift-v22';
+// Release 23: app code is network-first; only static images are cache-first.
+const CACHE='drift-v23';
 const LEAFLET=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'];
-const CORE=['./','./index.html','./features.html','./walter.html','./assets/walter-w2-memory.jpg','./styles.css?v=22','./app.js?v=22','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
+const CORE=['./','./index.html','./features.html','./updates.html','./walter.html','./assets/walter-w2-memory.jpg','./styles.css?v=23','./app.js?v=23','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
 });
