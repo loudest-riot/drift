@@ -1,3 +1,13 @@
+## Release 24 — Public Photo Log (October 9, 2026)
+
+- Add `/photo-log.html`: a responsive photo-first field gallery with source filters, captions, dates, and an accessible full-screen viewer.
+- Source A: only opt-in photos from verified public intercepts in D1/R2, filtered server-side by `public=1`, `verified=1`, and a non-null `photo_key`. Image routes still require public status; no private journal data are read.
+- Source B: curated editor-selected images from `public/data/photo-log.json`. The manifest begins empty; only records marked `public: true` are shown. This avoids accidentally publishing unapproved imagery.
+- Add offset pagination and `photos_only=1` filtering to `/api/intercepts` so later photos are not hidden by text-only public finds. Public intercept listing remains backward-compatible.
+- Protect photo uploads using a single-use capability returned when the intercept is created. Existing D1 schemas add `photo_upload_token` on first initialization; legacy submissions without capabilities cannot be overwritten.
+- Browser prepares photos as bounded-size JPEGs, stripping embedded EXIF metadata before upload; uploads accept validated JPEG, PNG, and WebP only. No image from private journal is automatically published.
+- Link the Photo Log from ABOUT, Features, and Public Field Log. Add release 24 to Field Notes and bump all frontend and service worker caches together.
+- Editor-maintained photos and submission guidance: `docs/PHOTO_LOG.md`. This release does not add anonymous public uploads or automated moderation.
 ## Release 23 — Public Field Notes (October 9, 2026)
 
 - Add `public/updates.html`, an accessible and mobile-readable public history that translates existing release notes into visitor-facing language.
