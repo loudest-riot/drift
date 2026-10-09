@@ -1,3 +1,10 @@
+## Release 23 — Public Field Notes (October 9, 2026)
+
+- Add `public/updates.html`, an accessible and mobile-readable public history that translates existing release notes into visitor-facing language.
+- Link FIELD NOTES // UPDATES from ABOUT > EXPLORE and the Features page footer. Keep map and bottom navigation uncluttered.
+- Retain this file as the technical source of truth, including implementation details that do not belong on the public page. Future meaningful releases should update both this history and the public summary.
+- Advance asset and service worker versions together to release 23; add `updates.html` to the offline app shell.
+
 ## Release 22 — Waypoints + field journal (October 8, 2026)
 
 - Curated landmarks remain named places; user waypoints have a separate map layer. Types include cool spot, geological feature, rock, bird sighting, plant, and place. Existing device records and submissions are retained using their current storage identity and table.
