@@ -11,7 +11,7 @@ const env={
   DB:{
     prepare(sql){
       return {sql,args:[],bind(...args){this.args=args;return this;},
-        async run(){return db.prepare(sql).run(...this.args);},
+        async run(){const result=db.prepare(sql).run(...this.args);return {meta:{changes:result.changes}};},
         async all(){return {results:db.prepare(sql).all(...this.args)};},
         async first(){return db.prepare(sql).get(...this.args);}
       };
