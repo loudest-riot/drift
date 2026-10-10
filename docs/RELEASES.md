@@ -1,3 +1,13 @@
+## Release 25 — Hines Places Catalog (October 9, 2026)
+
+- Catalog 36 reference places across Hines Park. Source is Wayne County parks inventory, individual park pages, Michigan Water Trails, and existing DRIFT monuments.
+- 24 locations have mapped place reference coordinates; remaining 12 are searchable with "PIN TO VERIFY" status rather than invented map markers.
+- Newburgh Lake Pointe Public Access has a separate featured record with pending field-verified entrance pin, distinct from Newburgh Pointe and Newburgh Lake Public Boat Launch.
+- Load `public/data/hines-places.json` in LANDMARKS map overlay and PLACES selector. Coordinates are general places, never turn-by-turn parking directions.
+- Searchable places directory and map selection. Missing pins can be contributed as visitor waypoints and subsequently reviewed for the official index.
+- Clarify public waypoint workflow, review and separation from private journal notes. No auto-approval.
+- Bump frontend and service worker cache to release 25.
+
 ## Release 24 — Public Photo Log (October 9, 2026)
 
 - Add `/photo-log.html`: a responsive photo-first field gallery with source filters, captions, dates, and an accessible full-screen viewer.
