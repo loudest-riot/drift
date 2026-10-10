@@ -5,14 +5,21 @@
   "entries": [
     {
       "id": "newburgh-lake-pointe-access",
-      "name": "Newburgh Lake Pointe Public Access",
+      "name": "Newburgh Lake Public Access",
       "kind": "ACCESS",
-      "note": "Distinct lakeside access area across the water from Lake Pointe Yacht Club, described during a field visit. Exact public entrance and parking pin awaiting field confirmation; do not treat Newburgh Pointe’s map pin as this entrance.",
-      "source": null,
+      "note": "Publicly listed lake access along Hines Drive. The supplied address covers a stretch of road shared by multiple Newburgh Lake recreation places. A field visit described a lakeside parking area across from Lake Pointe Yacht Club, with a short descent to the water. Exact parking and shoreline access coordinates remain unverified; do not reuse Newburgh Pointe or Sumac Pointe coordinates.",
+      "source": "https://www.atly.com/location/NewburghLakePublicAccess",
       "featured": true,
       "area": "NEWBURGH LAKE",
-      "provenance": "Visitor field report; exact public entrance location needs verification",
-      "position": "awaiting_verification"
+      "provenance": "Matched public Newburgh Lake Public Access listing and visitor-supplied address; exact meeting-area pin unverified",
+      "position": "awaiting_verification",
+      "aliases": [
+        "Newburgh Lake Pointe Public Access"
+      ],
+      "address": "37507–39399 Edward N Hines Dr, Livonia, MI 48150",
+      "additional_sources": [
+        "https://sandee.com/united-states/michigan/livonia/newburgh-lake-public-access"
+      ]
     },
     {
       "id": "bennett-arboretum",

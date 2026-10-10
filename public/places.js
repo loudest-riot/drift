@@ -12,7 +12,7 @@ function link(href,label,primary=false){
 }
 function render(){
  const term=search.value.trim().toLocaleLowerCase();
- const matches=places.filter(p=>[p.name,p.note,p.area,p.kind].join(' ').toLocaleLowerCase().includes(term));
+ const matches=places.filter(p=>[p.name,p.note,p.area,p.kind,p.address,...(Array.isArray(p.aliases)?p.aliases:[])].join(' ').toLocaleLowerCase().includes(term));
  list.replaceChildren();
  const frag=document.createDocumentFragment();
  for(const p of matches){
@@ -24,15 +24,24 @@ function render(){
   const title=document.createElement('h2');title.textContent=p.name;
   const desc=document.createElement('p');desc.textContent=p.note||'';
   const actions=document.createElement('div');actions.className='place-actions';
+  if(p.address){
+    const address=document.createElement('p');address.className='place-address';
+    address.textContent=p.address;
+    li.append(meta,title,address);
+  }
   if(p.position==='reference'&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)){
     actions.append(link('./?place='+encodeURIComponent(p.id),'VIEW ON DRIFT MAP',true));
   }else{
     const warning=document.createElement('span');warning.className='pin-pending';warning.textContent='EXACT COORDINATE NOT YET VERIFIED';
-    li.append(meta,title,warning,desc);
+    if(!p.address)li.append(meta,title);
+    li.append(warning,desc);
     actions.append(link('./?suggest_place='+encodeURIComponent(p.id),'HELP LOCATE / SUBMIT A WAYPOINT',true));
   }
   if(p.source&&/^https:\/\//.test(p.source))actions.append(link(p.source,'LOCATION SOURCE ↗'));
-  if(p.position==='reference')li.append(meta,title,desc);
+  if(p.position==='reference'){
+    if(!p.address)li.append(meta,title);
+    li.append(desc);
+  }
   li.append(actions);frag.append(li);
  }
  list.append(frag);

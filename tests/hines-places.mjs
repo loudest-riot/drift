@@ -25,7 +25,9 @@ for(const p of data.entries){
 const newburgh=data.entries.find(p=>p.id==='newburgh-lake-pointe-access');
 assert.ok(newburgh?.featured);
 assert.equal(newburgh.position,'awaiting_verification');
-assert.equal(newburgh.source,null);
+assert.ok(newburgh.source?.startsWith('https://'));
+assert.match(newburgh.address,/37507.*39399 Edward N Hines Dr/);
+assert.ok(newburgh.aliases.includes('Newburgh Lake Pointe Public Access'));
 assert.ok(data.entries.some(p=>p.id==='newburgh-pointe'&&p.position==='reference'));
 assert.ok(data.entries.some(p=>p.id==='newburgh-boat-launch'&&p.position==='reference'));
 assert.match(read('../public/index.html'),/href="places\.html"/);

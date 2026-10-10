@@ -1,3 +1,9 @@
+## Release 25 — Newburgh access address clarification (October 9, 2026)
+
+- Matched a visitor-provided Hines Drive address range (37507–39399 Edward N Hines Dr, Livonia, MI 48150) to public listings for Newburgh Lake Public Access.
+- Preserve “Newburgh Lake Pointe Public Access” as an alternative searchable name and show the address in HINES PLACES.
+- Keep its exact entrance pin pending verification because the number range overlaps several lake access areas. Do not substitute Newburgh Pointe, the boat launch, or Sumac Pointe coordinates.
+
 ## Release 25 — Hines Places Catalog (October 9, 2026)
 
 - Catalog 36 reference places across Hines Park. Source is Wayne County parks inventory, individual park pages, Michigan Water Trails, and existing DRIFT monuments.
