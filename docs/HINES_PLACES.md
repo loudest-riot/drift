@@ -14,9 +14,9 @@ Each item has a stable `id`, `name`, `kind`, `note`, `source` (when available), 
 - `sensitive: true`: cemetery or memorial, reference only. No geocache placements or intrusive access instructions.
 - `featured: true`: highlighted in the public directory.
 
-The data includes Wayne County recreation spaces, lakes, nature landmarks, existing memorial references and the field-reported **Newburgh Lake Pointe Public Access**. The latter is **not** to be silently merged with Wayne County's **Newburgh Pointe** or the officially documented **Newburgh Lake Public Boat Launch**.
+The data includes Wayne County recreation spaces, lakes, nature landmarks, existing memorial references and **Newburgh Lake Public Access** (also called **Newburgh Lake Pointe Public Access** in the visitor field report). This location must **not** be silently merged with Wayne County's **Newburgh Pointe**, **Sumac Pointe**, or the independently documented **Newburgh Lake Public Boat Launch**.
 
-The precise Newburgh Lake Pointe Public Access entrance and parking location still requires a field-confirmed pin. Do not reuse the boat launch or Newburgh Pointe coordinate to represent it. This item comes from a field visitor, not from a verified Wayne County facility listing.
+Its public listings match the address supplied by the visitor: **37507–39399 Edward N Hines Dr, Livonia, MI 48150**, a range rather than a single physical entrance. [Atly](https://www.atly.com/location/NewburghLakePublicAccess) and [Sandee](https://sandee.com/united-states/michigan/livonia/newburgh-lake-public-access) use that range. The exact access point and parking area described by the visitor still need a field-confirmed pin. Do not copy the Newburgh Pointe, boat launch or Sumac Pointe map coordinates as a substitute.
 
 ## How a visitor contributes a missing point
 
