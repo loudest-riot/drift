@@ -1,7 +1,7 @@
-// Release 24: app code is network-first; only static images are cache-first.
-const CACHE='drift-v24';
+// Release 25: app code is network-first; only static images are cache-first.
+const CACHE='drift-v25';
 const LEAFLET=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'];
-const CORE=['./','./index.html','./features.html','./updates.html','./photo-log.html','./photo-log.css?v=24','./photo-log.js?v=24','./data/photo-log.json','./walter.html','./assets/walter-w2-memory.jpg','./styles.css?v=24','./app.js?v=24','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
+const CORE=['./','./index.html','./features.html','./updates.html','./places.html','./places.js?v=25','./data/hines-places.json','./photo-log.html','./photo-log.css?v=25','./photo-log.js?v=25','./data/photo-log.json','./walter.html','./assets/walter-w2-memory.jpg','./styles.css?v=25','./app.js?v=25','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
 });
