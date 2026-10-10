@@ -47,6 +47,71 @@ const landmarks=[
   {name:'Helms Haven',lat:42.3402,lng:-83.2638,kind:'PARK',note:'Eastern field node along the Rouge. Also hosts MRR-001.'}
 ];
 
+let hinesCatalog=[];
+const officialLandmarks=()=>hinesCatalog.length?hinesCatalog:landmarks;
+const landmarkMarkers=new Map();
+async function loadHinesCatalog(){
+  try{
+    const r=await fetch('data/hines-places.json',{cache:'no-cache'});
+    if(!r.ok)throw new Error('catalog unavailable');
+    const payload=await r.json();
+    if(!Array.isArray(payload.entries))throw new Error('invalid catalog');
+    hinesCatalog=payload.entries.filter(p=>
+      p&&typeof p.id==='string'&&typeof p.name==='string'&&
+      (p.position==='awaiting_verification'||(
+        p.position==='reference'&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)&&
+        p.lat>=42.30&&p.lat<=42.46&&p.lng>=-83.53&&p.lng<=-83.22
+      )));
+    if(!hinesCatalog.length)throw new Error('empty catalog');
+    renderLandmarks();
+    populateHinesPlaceSelect();
+    const params=new URLSearchParams(location.search);
+    const chosen=params.get('place');
+    if(chosen)focusHinesPlace(chosen);
+    const suggested=params.get('suggest_place');
+    if(suggested){
+      const p=hinesCatalog.find(item=>item.id===suggested);
+      if(p){
+        showWaypointEditor();
+        document.getElementById('waypointName').value=p.name;
+        document.getElementById('waypointKind').value=p.kind==='WATER'?'WATER':p.kind==='HISTORY'?'HISTORY':'PLACE';
+        document.getElementById('waypointNote').value='Location suggestion for DRIFT. Please verify public access and place the pin accurately.';
+        document.getElementById('waypointFormStatus').textContent='Place a pin on the map or use precise location at this spot. Save privately, then use SUBMIT WAYPOINT in JOURNAL to request public review.';
+      }
+    }
+  }catch(error){console.warn('Hines catalog unavailable; using existing reference points.',error);}
+}
+function populateHinesPlaceSelect(){
+  const select=document.getElementById('hinesPlaceSelect');
+  if(!select||!hinesCatalog.length)return;
+  select.replaceChildren();
+  select.add(new Option('PLACES ▾',''));
+  const groups=new Map();
+  for(const p of hinesCatalog){
+    const area=p.area||'HINES PARK';
+    if(!groups.has(area)){const g=document.createElement('optgroup');g.label=area;groups.set(area,g);select.add(g);}
+    const label=p.name.toUpperCase()+(p.position!=='reference'?' · VERIFY PIN':'');
+    groups.get(area).append(new Option(label,p.id));
+  }
+  select.add(new Option('ALL HINES PLACES / BROWSE →','__all__'));
+}
+function focusHinesPlace(id){
+  const p=hinesCatalog.find(place=>place.id===id);
+  if(!p)return;
+  if(p.position!=='reference'){
+    location.href='places.html#'+encodeURIComponent(p.id);
+    return;
+  }
+  centerOnNextFix=false;map.closePopup();
+  showView('fieldView');
+  landmarkLayer.addTo(map);
+  setLayerButton(document.getElementById('landmarksToggle'),true);
+  map.setView([p.lat,p.lng],15);
+  const marker=landmarkMarkers.get(p.id);
+  if(marker)marker.openPopup();
+  else toast('REFERENCE LOCATION // OPEN LANDMARKS FOR DETAILS');
+}
+
 // Labels are orientation cues, not municipal boundary polygons.
 const municipalities=[
   {name:'NORTHVILLE',lat:42.424,lng:-83.483},
@@ -146,6 +211,7 @@ function initMap(){
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.getElementById('map'));
   initWaypointTools();
   loadCommunityWaypoints();
+  loadHinesCatalog();
   loadTrails();
 }
 function setMapStyle(style){
@@ -218,15 +284,17 @@ function showTrail(id){
   map.fitBounds(L.geoJSON({type:'FeatureCollection',features}).getBounds(),{padding:[24,24],maxZoom:16,animate:false});
 }
 function renderLandmarks(){
-  landmarkLayer.clearLayers();
-  landmarks.forEach(lm=>{
+  landmarkLayer.clearLayers();landmarkMarkers.clear();
+  officialLandmarks().filter(lm=>Number.isFinite(lm.lat)&&Number.isFinite(lm.lng)).forEach(lm=>{
     // A signal already represents these coordinates; don't stack two tap targets.
     if(state.signals.some(s=>!s.jp&&s.lat!=null&&distanceM(s,lm)<5))return;
     const sensitive=!!lm.sensitive;
     const symbol=sensitive?'✦':lm.kind==='WATER'?'≈':lm.kind==='HISTORY'?'◇':'○';
     const html=`<div class="landmark-dot ${sensitive?'sensitive':''}">${symbol}</div>`;
     const m=L.marker([lm.lat,lm.lng],{icon:L.divIcon({className:'',html,iconSize:[24,24],iconAnchor:[12,12]})}).addTo(landmarkLayer);
-    bindLocationInfo(m,`<div class="map-popup"><div class="eyebrow">${esc(lm.kind)}${lm.source==='personal'?' // YOUR LANDMARK':lm.source==='community'?' // COMMUNITY':''}${sensitive?' // SENSITIVE':''}</div><strong>${esc(lm.name)}</strong><p>${esc(lm.note||'')}</p>${lm.source==='personal'?`<button type="button" class="popup-details" data-edit-waypoint="${esc(lm.id)}">EDIT LANDMARK</button>`:''}</div>`);
+    const source=typeof lm.source==='string'&&lm.source.startsWith('https://')?'<a href="'+esc(lm.source)+'" target="_blank" rel="noopener noreferrer">SOURCE ↗</a>':'';
+    bindLocationInfo(m,`<div class="map-popup"><div class="eyebrow">${esc(lm.kind)} // AREA REFERENCE${sensitive?' // SENSITIVE':''}</div><strong>${esc(lm.name)}</strong><p>${esc(lm.note||'')}</p><p>Reference point only. Confirm public access and parking on site.</p>${source}</div>`);
+    if(lm.id)landmarkMarkers.set(lm.id,m);
   });
 }
 function renderMunicipalities(){
@@ -493,6 +561,7 @@ document.getElementById('backBtn').onclick=()=>showView('fieldView');
 document.getElementById('locateBtn').onclick=()=>startLocation(true);
 document.getElementById('hinesHomeBtn').onclick=()=>{centerOnNextFix=false;map.closePopup();map.fitBounds(HINES_BOUNDS,{padding:[18,18],animate:false});document.getElementById('hinesPlaceSelect').value='';};
 document.getElementById('hinesPlaceSelect').onchange=e=>{
+  if(hinesCatalog.length){const id=e.target.value;e.target.value='';e.target.blur();if(id==='__all__')location.href='places.html';else if(id)focusHinesPlace(id);return;}
   const option=e.target.selectedOptions[0];
   if(!option?.dataset.lat||!option?.dataset.lng)return;
   centerOnNextFix=false;map.closePopup();map.setView([Number(option.dataset.lat),Number(option.dataset.lng)],14);
@@ -624,7 +693,7 @@ function initWaypointTools(){
     e.preventDefault();const existing=personalWaypoints.find(lm=>lm.id===waypointEditId);
     const lm={...existing,id:existing?.id||crypto.randomUUID(),name:document.getElementById('waypointName').value.trim(),kind:document.getElementById('waypointKind').value,note:document.getElementById('waypointNote').value.trim(),lat:Number(document.getElementById('waypointLat').value),lng:Number(document.getElementById('waypointLng').value),entries:existing?.entries||[],source:'personal',updatedAt:new Date().toISOString()};lm.sensitive=lm.kind==='BURIAL';
     if(!validWaypoint(lm)||!waypointForm.reportValidity()){waypointStatus.textContent='Enter a name and valid coordinates.';return;}
-    if([...landmarks,...personalWaypoints,...communityWaypoints].some(other=>other.id!==lm.id&&other.name.toLowerCase()===lm.name.toLowerCase()&&distanceM(other,lm)<25)){waypointStatus.textContent='A waypoint with this name is already saved at this location.';return;}
+    if([...officialLandmarks(),...personalWaypoints,...communityWaypoints].some(other=>other.id!==lm.id&&other.name.toLowerCase()===lm.name.toLowerCase()&&distanceM(other,lm)<25)){waypointStatus.textContent='A waypoint with this name is already saved at this location.';return;}
     const next=existing?personalWaypoints.map(p=>p.id===lm.id?lm:p):[...personalWaypoints,lm];
     if(!savePersonalWaypoints(next)){waypointStatus.textContent='Waypoint not saved. Your entries are still here; try again.';return;}
     waypointLayer.addTo(map);setLayerButton(document.getElementById('waypointsToggle'),true);closeWaypointEditor();toast('Waypoint saved on this device.');
