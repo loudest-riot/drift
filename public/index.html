@@ -27,9 +27,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=25" />
 </head>
-<body data-release="24">
+<body data-release="25">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
@@ -173,6 +173,7 @@
         <h2>ABOUT DRIFT</h2>
         <p class="lede"><a href="walter.html" style="color:var(--cyan);text-underline-offset:4px">Dedicated to the memory of Walter Wasacz (W2) →</a><br />1955–2026</p>
         <p class="lede">A different way to explore Hines Park: follow your curiosity, discover music tied to a place, and notice more along the way.</p>
+        <p class="directory-note">Official landmarks are under MAP OPTIONS → LANDMARKS and the PLACES selector. Visitor discoveries go in WAYPOINTS and appear publicly only after review.</p>
       </div>
       <div class="backend-card">
         <div class="eyebrow">SHARED SERVICES</div>
@@ -200,6 +201,7 @@
             <a class="internal" href="./">DRIFT Home</a>
             <a class="internal" href="features.html">Features + Psychogeocaching</a>
             <a class="internal" href="field-log.html">Public Field Log</a>
+            <a class="internal" href="places.html">Hines Places // Landmark Directory</a>
             <a class="internal" href="photo-log.html">Public Photo Log</a>
             <a class="internal" href="updates.html">Field Notes // Updates</a>
           </div>
@@ -297,7 +299,7 @@
       <fieldset><legend>Location</legend><div class="waypoint-actions"><button id="pickWaypointLocation" class="chip" type="button">CHOOSE ON MAP</button><button id="useWaypointLocation" class="chip" type="button">USE MY LOCATION</button></div><p>Choose the spot where you noticed it. Birds and other sightings record an observation, not a permanent location.</p>
       <details class="coordinate-details"><summary>Enter coordinates</summary><div class="form-grid"><div><label for="waypointLat">Latitude</label><input id="waypointLat" type="number" step="any" min="-90" max="90" required inputmode="decimal" /></div><div><label for="waypointLng">Longitude</label><input id="waypointLng" type="number" step="any" min="-180" max="180" required inputmode="decimal" /></div></div></details></fieldset>
       <p id="waypointFormStatus" role="status"></p>
-      <p class="waypoint-local-note">This saves on your device only. You can submit it for review from JOURNAL. A submitted waypoint includes its exact pin location and appears publicly only after approval.</p>
+      <p class="waypoint-local-note">SAVE WAYPOINT keeps it on this device. To share publicly, open JOURNAL and tap SUBMIT WAYPOINT on that saved item. Your exact pin is sent for review; private dated journal notes are never included. Only approved submissions appear for other visitors.</p>
       <div class="waypoint-actions"><button id="saveWaypointBtn" class="mini-primary" type="submit">SAVE WAYPOINT</button><button id="cancelWaypointDialog" class="chip" type="button">CANCEL</button></div>
     </form>
   </dialog>
@@ -312,7 +314,7 @@
   </dialog>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>
 
