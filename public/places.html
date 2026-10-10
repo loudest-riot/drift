@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f3f3ef" />
+  <meta name="description" content="Explore named parks, lake access, history and open field locations along Hines Park. Contribute waypoint discoveries for review." />
+  <link rel="canonical" href="https://drift.loudestriot.com/places.html" />
+  <title>Hines Places // DRIFT</title>
+  <link rel="icon" href="icons/signal-glyph-192.png" />
+  <link rel="stylesheet" href="styles.css?v=25" />
+  <style>
+  body.places-page{display:block;overflow:auto;height:auto;min-height:100dvh;background:#f3f3ef;color:#171a18;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif}
+  .places-page main{max-width:850px;margin:0 auto;padding:20px 18px 75px}
+  .places-page a{color:#344d36;text-underline-offset:3px}
+  .places-page a:focus-visible,.places-page button:focus-visible,.places-page input:focus-visible{outline:3px solid #719745;outline-offset:2px}
+  .places-page .eyebrow{font-weight:800;color:#52694e;font-size:11px;letter-spacing:.14em}
+  .places-page h1{font-size:clamp(45px,9vw,82px);line-height:.96;letter-spacing:-.06em;color:#171a18;margin:16px 0}
+  .places-page .lead{font-size:clamp(17px,3vw,21px);line-height:1.5;max-width:650px;color:#2a332c}
+  .places-page .context{max-width:680px;font-size:14px;line-height:1.65;color:#57615a}
+  .places-page .place-toolbar{position:sticky;top:0;z-index:5;background:#f3f3ef;padding:12px 0;border-bottom:1px solid #cbd1c6;display:flex;gap:10px;align-items:center}
+  .places-page .place-toolbar input{min-width:0;flex:1;font:inherit;font-size:16px;padding:12px;background:white;border:1px solid #adb8ac;border-radius:4px}
+  .places-page .place-count{font-size:11px;font-weight:800;white-space:nowrap;color:#536257}
+  .places-page .place-list{list-style:none;padding:0;margin:22px 0}
+  .places-page .place-card{border-top:1px solid #d2d9d0;padding:20px 0;scroll-margin-top:85px}
+  .places-page .place-card:first-child{border-top:2px solid #344d36}
+  .places-page .place-card.featured{border-left:4px solid #9dbb36;padding-left:15px}
+  .places-page .place-card h2{font-size:21px;line-height:1.25;letter-spacing:-.02em;color:#172018;margin:6px 0}
+  .places-page .place-meta{font-size:10px;color:#536456;letter-spacing:.08em;font-weight:800}
+  .places-page .place-card p{font-size:14px;line-height:1.6;color:#535e55;margin:10px 0 12px}
+  .places-page .place-actions{display:flex;flex-wrap:wrap;gap:8px}
+  .places-page .place-actions a{font-size:11px;letter-spacing:.06em;font-weight:800;display:inline-flex;align-items:center;border:1px solid #aeb9a8;min-height:44px;padding:10px 13px;text-decoration:none;border-radius:3px}
+  .places-page .place-actions a.primary{background:#344d36;color:#fff;border-color:#344d36}
+  .places-page .pin-pending{display:inline-block;color:#795321;font-weight:800;font-size:10px;letter-spacing:.08em}
+  .places-page .footer{margin-top:40px;padding-top:20px;border-top:2px solid #344d36;display:flex;gap:17px;flex-wrap:wrap}
+  .places-page .footer a{font-size:12px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
+  </style>
+</head>
+<body class="places-page" data-release="25">
+<main>
+  <a class="privacy-back" href="./">← DRIFT / MAP</a>
+  <div class="eyebrow">DRIFT // HINES PARK LANDMARK INDEX</div>
+  <h1>HINES PLACES.</h1>
+  <p class="lead">A field directory across the full Hines corridor. Named parks, lake access, river places, history and curious edges.</p>
+  <p class="context">Mapped pins represent general place references, not guaranteed parking entrances or accessible paths. Locations marked <strong>PIN TO VERIFY</strong> are documented or field-reported places awaiting an accurate coordinate. Public finds require review before appearing on the community layer.</p>
+  <div class="place-toolbar">
+    <input id="placeSearch" type="search" aria-label="Search Hines places" placeholder="Search places, lakes, history…" autocomplete="off" />
+    <span id="placeCount" class="place-count" aria-live="polite">LOADING…</span>
+  </div>
+  <ol id="placeList" class="place-list" aria-label="Hines places"></ol>
+  <p id="placeStatus" class="context" role="status"></p>
+  <nav class="footer" aria-label="Related DRIFT pages">
+    <a href="./">ENTER THE FIELD →</a>
+    <a href="field-log.html">PUBLIC FIELD LOG</a>
+    <a href="photo-log.html">PHOTO LOG</a>
+    <a href="updates.html">FIELD NOTES</a>
+  </nav>
+</main>
+<script src="places.js?v=25" defer></script>
+</body>
+</html>
