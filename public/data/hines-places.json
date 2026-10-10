@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-09",
+  "source": "Wayne County 2026–2030 parks and recreation plan, individual Wayne County park profiles, Michigan Water Trails; listed positions are park/place reference points, never guaranteed parking entrances.",
+  "entries": [
+    {
+      "id": "newburgh-lake-pointe-access",
+      "name": "Newburgh Lake Pointe Public Access",
+      "kind": "ACCESS",
+      "note": "Distinct lakeside access area across the water from Lake Pointe Yacht Club, described during a field visit. Exact public entrance and parking pin awaiting field confirmation; do not treat Newburgh Pointe’s map pin as this entrance.",
+      "source": null,
+      "featured": true,
+      "area": "NEWBURGH LAKE",
+      "provenance": "Visitor field report; exact public entrance location needs verification",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "bennett-arboretum",
+      "name": "Bennett Arboretum",
+      "kind": "NATURE",
+      "note": "Historic arboretum and wooded trails near Northville. Exact trailhead pin needs verification.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "NORTHVILLE",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "northville-rec",
+      "name": "Northville Recreation Area",
+      "kind": "PARK",
+      "note": "Northville-area picnic spaces and trail connection. Park reference point, not turn-by-turn entry coordinates.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Northville-Recreation-Area",
+      "area": "NORTHVILLE",
+      "lat": 42.4223779,
+      "lng": -83.4766928,
+      "position": "reference"
+    },
+    {
+      "id": "cass-benton",
+      "name": "Cass Benton Park",
+      "kind": "PARK",
+      "note": "Wooded slopes, disc golf, and historical park facilities. Park-area reference, not an exact parking entrance.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Cass-Benton-Park",
+      "area": "NORTHVILLE",
+      "lat": 42.4162647,
+      "lng": -83.4739824,
+      "position": "reference"
+    },
+    {
+      "id": "waterford-bend",
+      "name": "Waterford Bend Park",
+      "kind": "PARK",
+      "note": "Riverside picnic area and distinctive play structure. Entrance pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Waterford-Bend-Park",
+      "area": "NORTHVILLE",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "springbrook",
+      "name": "Springbrook Recreation Area",
+      "kind": "PARK",
+      "note": "Named recreation area in Wayne County’s Hines Park inventory. Location pin needs verification.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "NORTHVILLE / PLYMOUTH",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "wilcox-lake",
+      "name": "Wilcox Lake",
+      "kind": "WATER",
+      "note": "Plymouth-area lake, fishing and shoreline restoration. General lake reference, not a boating access guarantee.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Wilcox-Park",
+      "area": "PLYMOUTH",
+      "lat": 42.38436,
+      "lng": -83.45971,
+      "position": "reference"
+    },
+    {
+      "id": "wilcox-park",
+      "name": "Wilcox Park",
+      "kind": "PARK",
+      "note": "Picnic shelter and public park facilities near Wilcox Lake. Site pin still needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Wilcox-Park",
+      "area": "PLYMOUTH",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "gunsolly-mills",
+      "name": "Gunsolly Mills Park",
+      "kind": "HISTORY",
+      "note": "Historic carding mill site, park shelter, and RC vehicle track. Entrance pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Gunsolly-Mills-Park",
+      "area": "PLYMOUTH",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "plymouth-riverside",
+      "name": "Plymouth Riverside Park",
+      "kind": "PARK",
+      "note": "Historic comfort station, shelter, and playscape along the Rouge.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Plymouth-Riverside-Park",
+      "area": "PLYMOUTH",
+      "lat": 42.3713832,
+      "lng": -83.4550872,
+      "position": "reference"
+    },
+    {
+      "id": "haggerty",
+      "name": "Haggerty Recreation Area",
+      "kind": "MEMORIAL",
+      "note": "Wayne County First Responders Memorial and athletic areas. Precise park pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Haggerty-Park-Wayne-County-First-Responders-Memorial",
+      "area": "PLYMOUTH",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "newburgh-pointe",
+      "name": "Newburgh Pointe",
+      "kind": "WATER",
+      "note": "Wayne County’s Newburgh Lake park node with fishing piers and boat launch. Separate from Newburgh Lake Pointe Public Access.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Newburgh-Pointe",
+      "area": "NEWBURGH LAKE",
+      "lat": 42.3667937,
+      "lng": -83.4224883,
+      "position": "reference"
+    },
+    {
+      "id": "newburgh-boat-launch",
+      "name": "Newburgh Lake Public Boat Launch",
+      "kind": "ACCESS",
+      "note": "Documented public boating access west of Newburgh Road. Distinct from the unverified lakeside access described by a field visitor.",
+      "source": "https://www.michiganwatertrails.org/location.asp?aid=5013&ait=av",
+      "area": "NEWBURGH LAKE",
+      "lat": 42.36646,
+      "lng": -83.42334,
+      "position": "reference"
+    },
+    {
+      "id": "sumac-pointe",
+      "name": "Sumac Pointe",
+      "kind": "WATER",
+      "note": "Public lake frontage, kayak launch and fishing dock. Separate from Newburgh Pointe.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Sumac-Pointe",
+      "area": "NEWBURGH LAKE",
+      "lat": 42.3663828,
+      "lng": -83.4147761,
+      "position": "reference"
+    },
+    {
+      "id": "levan-knoll",
+      "name": "Levan Knoll Park",
+      "kind": "NATURE",
+      "note": "Hillside with boardwalk and wildflowers. Stay on signed public trails.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Levan-Knoll-Park",
+      "area": "LIVONIA",
+      "lat": 42.3602129,
+      "lng": -83.3977263,
+      "position": "reference"
+    },
+    {
+      "id": "oak-grove",
+      "name": "Oak Grove",
+      "kind": "WATER",
+      "note": "Nankin Lake recreation area with non-motorized boat access and trails.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Oak-Grove",
+      "area": "WESTLAND",
+      "lat": 42.3525425,
+      "lng": -83.374207,
+      "position": "reference"
+    },
+    {
+      "id": "nankin-mills",
+      "name": "Nankin Mills Park",
+      "kind": "HISTORY",
+      "note": "Historic park and Nankin Mills Interpretive Center area; see the center’s own entrance details.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Nankin-Mills-Park",
+      "area": "WESTLAND",
+      "lat": 42.3490683,
+      "lng": -83.3734406,
+      "position": "reference"
+    },
+    {
+      "id": "nankin-mills-center",
+      "name": "Nankin Mills Interpretive Center",
+      "kind": "HISTORY",
+      "note": "Historic mill and interpretive exhibits. Reference pin drawn from DRIFT’s existing catalog; check visitor entry details.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Learn/Nankin-Mills-Interpretive-Center",
+      "area": "WESTLAND",
+      "lat": 42.348981,
+      "lng": -83.369991,
+      "position": "reference"
+    },
+    {
+      "id": "elm-grove",
+      "name": "Elm Grove Park",
+      "kind": "PARK",
+      "note": "Park facilities and wetland surroundings.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Elm-Grove-Park",
+      "area": "WESTLAND",
+      "lat": 42.3457829,
+      "lng": -83.3637018,
+      "position": "reference"
+    },
+    {
+      "id": "valley-view",
+      "name": "Valley View Park",
+      "kind": "PARK",
+      "note": "Ball fields in the central Hines corridor. Exact park pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Valley-View-Park",
+      "area": "WESTLAND",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "hawthorne-ridge",
+      "name": "Hawthorne Ridge Park",
+      "kind": "RECREATION",
+      "note": "Wayne County bike park and pump track, plus dog park. Precise entry pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Hawthorne-Ridge-Park",
+      "area": "WESTLAND",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "merriman-hollow",
+      "name": "Merriman Hollow Park",
+      "kind": "PARK",
+      "note": "Shelter, ball field, LightFest corridor access.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Merriman-Hollow-Park",
+      "area": "WESTLAND",
+      "lat": 42.3431253,
+      "lng": -83.3523465,
+      "position": "reference"
+    },
+    {
+      "id": "maple-grove",
+      "name": "Maple Grove Recreation Area",
+      "kind": "PARK",
+      "note": "Named in Wayne County’s recreation inventory. Exact pin needs verification.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "WESTLAND",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "sherwood",
+      "name": "Sherwood Park",
+      "kind": "PARK",
+      "note": "Open recreation space alongside the Middle Rouge. Exact entrance pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Sherwood-Park",
+      "area": "WESTLAND",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "middlebelt-hill",
+      "name": "Middlebelt Hill / Dead Man’s Hill",
+      "kind": "NATURE",
+      "note": "Local hill landmark; avoid closed or restricted slopes. Existing DRIFT area reference.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "WESTLAND",
+      "lat": 42.3451,
+      "lng": -83.3246,
+      "position": "reference"
+    },
+    {
+      "id": "perrin",
+      "name": "Perrin Park",
+      "kind": "PARK",
+      "note": "Ball fields and recreation spaces. County reports shelter construction restrictions for 2026.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Perrin-Park",
+      "area": "WESTLAND",
+      "lat": 42.3498016,
+      "lng": -83.3153304,
+      "position": "reference"
+    },
+    {
+      "id": "nolar-bend",
+      "name": "Nolar Bend Park",
+      "kind": "PARK",
+      "note": "Riverside recreation area and ball fields.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Nolar-Bend-Park",
+      "area": "DEARBORN HEIGHTS",
+      "lat": 42.3498204,
+      "lng": -83.3075605,
+      "position": "reference"
+    },
+    {
+      "id": "wallaceville",
+      "name": "Wallaceville Park",
+      "kind": "WETLAND",
+      "note": "Wetland-edge recreation area and soccer fields.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Wallaceville-Park",
+      "area": "DEARBORN HEIGHTS",
+      "lat": 42.3475683,
+      "lng": -83.283558,
+      "position": "reference"
+    },
+    {
+      "id": "parr",
+      "name": "Parr Park",
+      "kind": "PARK",
+      "note": "East-end Hines recreation area.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Parr-Park",
+      "area": "DEARBORN HEIGHTS",
+      "lat": 42.3485464,
+      "lng": -83.2765204,
+      "position": "reference"
+    },
+    {
+      "id": "boy-scout",
+      "name": "Boy Scout Shelter",
+      "kind": "SHELTER",
+      "note": "Existing DRIFT eastern shelter reference; verify current access before visiting.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "DEARBORN HEIGHTS",
+      "lat": 42.34413,
+      "lng": -83.271,
+      "position": "reference"
+    },
+    {
+      "id": "warrendale",
+      "name": "Warrendale Park",
+      "kind": "RECREATION",
+      "note": "Shelters, courts, and ball/soccer fields. Exact park pin needs verification.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Warrendale-Park",
+      "area": "DEARBORN HEIGHTS",
+      "position": "awaiting_verification"
+    },
+    {
+      "id": "helms-haven",
+      "name": "Helms Haven Park",
+      "kind": "PARK",
+      "note": "Riverbank shelter and recreation area; DRIFT’s Middle Rouge Relay signal is nearby.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Helms-Haven-Park",
+      "area": "DEARBORN HEIGHTS",
+      "lat": 42.3400682,
+      "lng": -83.2635543,
+      "position": "reference"
+    },
+    {
+      "id": "parkland",
+      "name": "Parkland Recreation Area",
+      "kind": "PARK",
+      "note": "Eastern Hines recreation area.",
+      "source": "https://www.waynecountymi.gov/Parks-Recreation/Explore/Hines-Park/Parkland-Park",
+      "area": "DEARBORN",
+      "lat": 42.3333997,
+      "lng": -83.2536104,
+      "position": "reference"
+    },
+    {
+      "id": "york-cemetery",
+      "name": "Old Village / York Street Cemetery",
+      "kind": "BURIAL",
+      "note": "Historic cemetery reference. Never a cache placement or approach target.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "PLYMOUTH",
+      "sensitive": true,
+      "lat": 42.3811029,
+      "lng": -83.4574955,
+      "position": "reference"
+    },
+    {
+      "id": "riverside-cemetery",
+      "name": "Riverside Cemetery",
+      "kind": "BURIAL",
+      "note": "Historic cemetery reference. Never a cache placement or approach target.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "PLYMOUTH",
+      "sensitive": true,
+      "lat": 42.37225,
+      "lng": -83.452708,
+      "position": "reference"
+    },
+    {
+      "id": "tonquish-marker",
+      "name": "Chief Tonquish Burial Site Marker",
+      "kind": "BURIAL",
+      "note": "Memorial reference only; do not place caches or encourage access to burial areas.",
+      "source": "https://www.waynecountymi.gov/files/assets/mainsite/v/1/community-events-amp-recreation/documents/parks/2026-2030-wayne-county-parks-and-recreation-plan.pdf",
+      "area": "LIVONIA",
+      "sensitive": true,
+      "lat": 42.351151,
+      "lng": -83.38575,
+      "position": "reference"
+    }
+  ]
+}
