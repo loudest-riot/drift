@@ -27,9 +27,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css?v=25" />
+  <link rel="stylesheet" href="styles.css?v=26" />
 </head>
-<body data-release="25">
+<body data-release="26">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
@@ -138,7 +138,7 @@
 
     <section id="archiveView" class="view">
 
-      <div class="section-head"><h2>FIELD JOURNAL</h2><p class="lede">Cool spots and things you noticed. Add dated notes when you return.</p><button id="journalAddWaypointBtn" class="chip" type="button">ADD WAYPOINT</button></div>
+      <div class="section-head"><h2>FIELD JOURNAL</h2><p class="lede">Cool spots and things you noticed. Add notes or photos now, edit them or add more when you return.</p><button id="journalAddWaypointBtn" class="chip" type="button">ADD WAYPOINT</button></div>
       <div id="savedWaypoints" class="archive-list"></div>
       <div class="section-head compact"><div class="eyebrow">YOUR FINDS + ROUTES</div></div>
       <div id="archiveStats" class="stats"></div>
@@ -160,7 +160,8 @@
           <button class="mini-primary" type="submit">SAVE PROFILE</button>
         </form>
         <label class="export-check"><input id="exportCoordinates" type="checkbox" /> Include exact route and waypoint coordinates in my export</label>
-        <p>Exports contain your profile, personal finds, favorites, waypoints and private journal notes, and route summaries. Check the box only if you want precise paths and waypoint locations included. Keep that file private. Public posts and uploaded photos are not included.</p>
+        <label class="export-check"><input id="exportPhotos" type="checkbox" /> Include private journal photos in my export</label>
+        <p>Exports contain your profile, personal finds, favorites, waypoints and private journal notes, and route summaries. Check the box only if you want precise paths and waypoint locations included. Keep that file private. Journal photos are optional and make the export larger. Public posts and server-uploaded find photos are not included.</p>
         <button id="exportDataBtn" class="mini-primary" type="button">EXPORT MY DATA</button>
         <p id="deviceProfileStatus" role="status"></p>
       </section>
@@ -228,6 +229,8 @@
             <a class="internal" href="contact.html">Contact</a>
             <a class="internal" href="privacy.html">Privacy + Field Data</a>
           </div>
+          <section id="newsletterSection" hidden><h3>FIELD NOTES BY EMAIL</h3><p>DRIFT updates, new discoveries, and sounds from the field.</p><a id="newsletterLink" class="share-action" target="_blank" rel="noopener noreferrer">SIGN UP WITH MAILERLITE ↗</a><p>Opens our MailerLite signup form. Joining is optional and separate from submitting a waypoint.</p></section>
+          <button class="chip" type="button" onclick="DriftShare.open({title:'DRIFT',text:'Explore Hines Park with DRIFT // Loudest Riot Sounds'})">SHARE DRIFT…</button>
           <p class="directory-note">Public shared intercepts are opt-in. Exact verification coordinates are not stored with an intercept.</p>
         </section>
       </div>
@@ -303,14 +306,20 @@
   <dialog id="journalDialog" class="waypoint-dialog" aria-labelledby="journalTitle">
     <form id="journalEntryForm">
       <div class="modal-head"><div><div class="eyebrow">PRIVATE JOURNAL NOTE</div><h2 id="journalTitle"></h2></div><button id="closeJournalDialog" class="chip" type="button" aria-label="Close journal note">CLOSE</button></div>
-      <label for="journalText">What did you notice?</label><textarea id="journalText" required maxlength="2000" rows="5" autofocus placeholder="A bird call, a new leaf, the light on a rock…"></textarea>
+      <label for="journalText">What did you notice?</label><textarea id="journalText" maxlength="2000" rows="5" autofocus placeholder="A bird call, a new leaf, the light on a rock…"></textarea>
       <label for="journalDate">Observed at</label><input id="journalDate" type="datetime-local" required />
-      <p id="journalEntryStatus" role="status"></p><button class="mini-primary" type="submit">SAVE PRIVATE NOTE</button>
+      <label for="journalPhoto">Photo (optional; add or replace later)</label><input id="journalPhoto" type="file" accept="image/*" />
+      <img id="journalPhotoPreview" class="journal-photo" alt="Current private journal photo" hidden />
+      <label id="journalRemovePhotoLabel" class="export-check" hidden><input id="journalRemovePhoto" type="checkbox" /> Remove the existing photo</label>
+      <p>Notes and photos stay on this device. Photos are resized and embedded metadata removed. SHARE lets you choose what to send to another app.</p>
+      <p id="journalEntryStatus" role="status"></p><button id="saveJournalEntry" class="mini-primary" type="submit">SAVE PRIVATE ENTRY</button>
     </form>
   </dialog>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=25"></script>
+  <script src="journal-media.js?v=26"></script>
+  <script src="share.js?v=26"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>
 

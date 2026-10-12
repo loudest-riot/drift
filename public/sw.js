@@ -1,9 +1,9 @@
-// Release 25: app code is network-first; only static images are cache-first.
-const CACHE='drift-v25';
+// Release 26: app code is network-first; only static images are cache-first.
+const CACHE='drift-v26';
 const LEAFLET=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'];
-const CORE=['./','./index.html','./features.html','./updates.html','./places.html','./places.js?v=25','./data/hines-places.json','./photo-log.html','./photo-log.css?v=25','./photo-log.js?v=25','./data/photo-log.json','./walter.html','./assets/walter-w2-memory.jpg','./styles.css?v=25','./app.js?v=25','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
+const CORE=['./journal-media.js?v=26','./share.js?v=26','./','./index.html','./field-log.html','./field-log.js?v=26','./contact.html','./privacy.html','./features.html','./updates.html','./places.html','./places.js?v=26','./data/hines-places.json','./photo-log.html','./photo-log.css?v=26','./photo-log.js?v=26','./data/photo-log.json','./walter.html','./assets/walter-w2-memory.jpg','./styles.css?v=26','./app.js?v=26','./data/hines-trails.json','./manifest.webmanifest','./assets/drift-logo-light.png','./icons/signal-glyph-180.png','./icons/signal-glyph-192.png','./icons/signal-glyph-512.png',...LEAFLET];
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE.filter(url=>!LEAFLET.includes(url))).then(()=>Promise.allSettled(LEAFLET.map(async url=>{try{await cache.add(url);}catch{const prior=await caches.match(url);if(prior)await cache.put(url,prior);}})))).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('drift-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
@@ -19,7 +19,11 @@ self.addEventListener('fetch',event=>{
     }).catch(async()=>{
       const cached=await caches.match(request);
       if(cached)return cached;
-      if(request.mode==='navigate')return (await caches.match('./index.html'))||Response.error();
+      if(request.mode==='navigate'){
+        const page=await caches.match(url.origin+url.pathname);
+        if(page)return page;
+        if(url.pathname==='/'||url.pathname.endsWith('/index.html'))return (await caches.match('./index.html'))||Response.error();
+      }
       return Response.error();
     }));
     return;

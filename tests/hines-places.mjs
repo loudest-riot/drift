@@ -31,7 +31,7 @@ assert.ok(newburgh.aliases.includes('Newburgh Lake Pointe Public Access'));
 assert.ok(data.entries.some(p=>p.id==='newburgh-pointe'&&p.position==='reference'));
 assert.ok(data.entries.some(p=>p.id==='newburgh-boat-launch'&&p.position==='reference'));
 assert.match(read('../public/index.html'),/href="places\.html"/);
-assert.match(read('../public/sw.js'),/drift-v25/);
+assert.match(read('../public/sw.js'),/drift-v26/);
 assert.match(read('../public/app.js'),/loadHinesCatalog\(\)/);
 assert.match(read('../public/app.js'),/SUBMIT FOR REVIEW/);
 console.log('PASS Hines catalog completeness, reference pin bounds, provenance, featured access, links and submission UI.');

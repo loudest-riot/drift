@@ -212,3 +212,13 @@ async function start(){
   await Promise.all([getCurated(),getShared()]);
 }
 start();
+// Prepare a file before opening the share sheet so the next tap retains user activation.
+document.getElementById('viewerShare').onclick=async event=>{
+ const photo=visible[selected];if(!photo)return;
+ const button=event.currentTarget;button.disabled=true;
+ try{
+  let file=null;
+  try{const response=await fetch(photo.src);if(response.ok){const blob=await response.blob();if(['image/jpeg','image/png','image/webp'].includes(blob.type)&&blob.size<=8*1024*1024)file=new File([blob],'drift-field-photo.'+(blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':'jpg'),{type:blob.type});}}catch{}
+  DriftShare.open({title:photo.place,text:[photo.place,photo.caption,photo.credit].filter(Boolean).join(' // '),url:photo.kind==='find'?new URL(photo.src,location.href).href:'https://drift.loudestriot.com/photo-log.html',file});
+ }finally{button.disabled=false;}
+};

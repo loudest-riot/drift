@@ -155,17 +155,20 @@ function loadState(){
   if(!raw){
     for(const key of OLD_KEYS){try{raw=JSON.parse(localStorage.getItem(key)); if(raw)break;}catch(e){}}
   }
-  if(!raw?.signals) return {signals:clone(defaultSignals),intercepts:{},routes:[]};
+  if(!Array.isArray(raw?.signals)) return {signals:clone(defaultSignals),intercepts:{},routes:[]};
   // Merge the current canonical signal definitions with any locally assigned JP coordinates/clues.
   const merged=clone(defaultSignals).map(base=>{
-    const prior=raw.signals.find(s=>s.id===base.id);
+    const prior=raw.signals.find(s=>s&&s.id===base.id);
     if(!prior)return base;
     if(base.jp && prior.lat!=null) return {...base,...prior,jp:true};
     return {...base,...prior,name:base.name,code:base.code,region:prior.region||base.region};
   });
-  return {signals:merged,intercepts:raw.intercepts||{},routes:Array.isArray(raw.routes)?raw.routes:[]};
+  return {signals:merged,intercepts:raw.intercepts&&typeof raw.intercepts==='object'&&!Array.isArray(raw.intercepts)?raw.intercepts:{},routes:Array.isArray(raw.routes)?raw.routes:[]};
 }
-function saveState(){localStorage.setItem(FIELD_KEY,JSON.stringify(state));}
+function saveState(){
+  try{localStorage.setItem(FIELD_KEY,JSON.stringify(state));return true;}
+  catch{toast('DEVICE STORAGE UNAVAILABLE // EXPORT YOUR DATA BEFORE CLOSING');return false;}
+}
 function toRad(x){return x*Math.PI/180;}
 function toDeg(x){return x*180/Math.PI;}
 function norm360(x){return (x%360+360)%360;}
@@ -498,10 +501,11 @@ function buildDeviceExport(includeCoordinates=false){
     })
   };
 }
-document.getElementById('exportDataBtn').onclick=()=>{
+document.getElementById('exportDataBtn').onclick=async()=>{
   const status=document.getElementById('deviceProfileStatus');
   try{
     const data=buildDeviceExport(document.getElementById('exportCoordinates').checked);
+    if(document.getElementById('exportPhotos').checked)data.journalPhotos=await DriftMedia.export(personalWaypoints.flatMap(wp=>(wp.entries||[]).map(entry=>entry.photoId).filter(Boolean)));
     const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
     const link=document.createElement('a');link.href=url;link.download=`drift-data-${new Date().toISOString().slice(0,10)}.json`;
     document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
@@ -544,9 +548,9 @@ function stopTracking(){
   const durationMs=Date.now()-trackStartedAt;
   if(trackPoints.length>1){
     state.routes.push({id:`drift-${Date.now()}`,startedAt:new Date(trackStartedAt).toISOString(),endedAt:new Date().toISOString(),distanceM:trackDistanceM,durationMs,points:trackPoints.slice()});
-    state.routes=state.routes.slice(-12);saveState();renderArchive();toast('DRIFT SAVED');
+    state.routes=state.routes.slice(-12);const saved=saveState();renderArchive();toast(saved?'DRIFT SAVED':'ROUTE KEPT FOR THIS SESSION // EXPORT FROM JOURNAL');
   }else toast('NOT ENOUGH PATH DATA TO SAVE');
-  document.getElementById('trackStatus').textContent='SAVED';document.getElementById('trackStartBtn').disabled=false;document.getElementById('trackStopBtn').disabled=true;updateTracker();
+  document.getElementById('trackStatus').textContent=trackPoints.length>1?'STOPPED':'NOT ENOUGH PATH DATA';document.getElementById('trackStartBtn').disabled=false;document.getElementById('trackStopBtn').disabled=true;updateTracker();
 }
 function clearTrack(){
   if(tracking){toast('STOP THE CURRENT DRIFT FIRST');return;}
@@ -603,7 +607,7 @@ document.getElementById('trackStopBtn').onclick=stopTracking;
 document.getElementById('trackClearBtn').onclick=clearTrack;
 const startHint=document.getElementById('startHint');
 try{if(localStorage.getItem(START_HINT_KEY)==='1')startHint.classList.add('dismissed');}catch{}
-document.getElementById('dismissStartHint').onclick=()=>{localStorage.setItem(START_HINT_KEY,'1');startHint.classList.add('dismissed');};
+document.getElementById('dismissStartHint').onclick=()=>{try{localStorage.setItem(START_HINT_KEY,'1');}catch{}startHint.classList.add('dismissed');};
 
 document.getElementById('waypointsToggle').onclick=e=>{
   const on=map.hasLayer(waypointLayer);if(on)map.removeLayer(waypointLayer);else waypointLayer.addTo(map);setLayerButton(e.currentTarget,!on);
@@ -632,7 +636,7 @@ const waypointDialog=document.getElementById('waypointDialog');
 const waypointForm=document.getElementById('waypointForm');
 const waypointStatus=document.getElementById('waypointFormStatus');
 function validWaypoint(lm){return !!lm&&typeof lm.id==='string'&&typeof lm.name==='string'&&lm.name.trim().length>0&&Number.isFinite(lm.lat)&&Math.abs(lm.lat)<=90&&Number.isFinite(lm.lng)&&Math.abs(lm.lng)<=180&&WAYPOINT_KINDS.includes(lm.kind);}
-try{const saved=JSON.parse(localStorage.getItem(WAYPOINT_KEY));if(Array.isArray(saved))personalWaypoints=saved.filter(validWaypoint).map(lm=>({...lm,source:'personal',sensitive:lm.kind==='BURIAL',entries:Array.isArray(lm.entries)?lm.entries.filter(e=>typeof e.id==='string'&&typeof e.note==='string'&&Number.isFinite(Date.parse(e.observedAt))):[]}));}catch{}
+try{const saved=JSON.parse(localStorage.getItem(WAYPOINT_KEY));if(Array.isArray(saved))personalWaypoints=saved.filter(validWaypoint).map(lm=>({...lm,source:'personal',sensitive:lm.kind==='BURIAL',entries:Array.isArray(lm.entries)?lm.entries.filter(e=>e&&typeof e.id==='string'&&typeof e.note==='string'&&Number.isFinite(Date.parse(e.observedAt))):[]}));}catch{}
 function savePersonalWaypoints(next){
   try{localStorage.setItem(WAYPOINT_KEY,JSON.stringify(next));personalWaypoints=next;renderWaypoints();renderPersonalWaypoints();return true;}
   catch{toast('Could not save landmarks. Check whether browser storage is allowed.');return false;}
@@ -646,8 +650,29 @@ function renderWaypoints(){
   });
 }
 function entryDate(value){return new Date(value).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}
+function waypointReviewEmail(lm){
+  const body=`Please review this DRIFT waypoint submission.
+
+Submission ID: ${lm.submissionId}
+Name: ${lm.name}
+Type: ${waypointKindLabel(lm.kind)}
+Description: ${lm.note||''}
+Pin: ${lm.lat}, ${lm.lng}
+
+https://drift.loudestriot.com/
+Private journal entries and photos are not included.`;
+  return 'mailto:sounds@loudestriot.com?subject='+encodeURIComponent('DRIFT waypoint review: '+lm.name)+'&body='+encodeURIComponent(body);
+}
+let journalImageUrls=[];
 function renderPersonalWaypoints(){
-  document.getElementById('savedWaypoints').innerHTML=personalWaypoints.map(lm=>`<article class="archive-item waypoint-card"><div class="meta">${esc(waypointKindLabel(lm.kind))} // ${lm.submissionId?'SUBMITTED FOR REVIEW':'PRIVATE'}</div><h3>${esc(lm.name)}</h3>${lm.note?`<p>${esc(lm.note)}</p>`:''}<div class="waypoint-actions"><button class="chip" type="button" data-journal-waypoint="${esc(lm.id)}">ADD NOTE</button><button class="chip" type="button" data-show-waypoint="${esc(lm.id)}">MAP</button><button class="chip" type="button" data-submit-waypoint="${esc(lm.id)}" ${lm.submissionId?"disabled":""}>${lm.submissionId?"SUBMITTED":"SUBMIT FOR REVIEW"}</button></div><details><summary>Notes + options (${lm.entries?.length||0})</summary><div class="journal-entries">${[...(lm.entries||[])].sort((a,b)=>Date.parse(b.observedAt)-Date.parse(a.observedAt)).map(entry=>`<div class="journal-entry"><time datetime="${esc(entry.observedAt)}">${esc(entryDate(entry.observedAt))}</time><p>${esc(entry.note)}</p><button class="chip" type="button" data-delete-entry="${esc(entry.id)}" data-entry-waypoint="${esc(lm.id)}">REMOVE NOTE</button></div>`).join('')||'<p>No dated notes yet.</p>'}</div><div class="waypoint-actions"><button class="chip" type="button" data-edit-waypoint="${esc(lm.id)}">EDIT WAYPOINT</button><button class="chip" type="button" data-submit-waypoint="${esc(lm.id)}" ${lm.submissionId?'disabled':''}>${lm.submissionId?'SUBMITTED':'SUBMIT WAYPOINT'}</button><button class="chip" type="button" data-delete-waypoint="${esc(lm.id)}">REMOVE WAYPOINT</button></div><p class="journal-privacy">Journal notes stay private, including when you submit a waypoint.</p></details></article>`).join('')||'<p class="lede">Your journal starts with a waypoint. Add a cool spot, rock, bird sighting, plant, or geological feature on the map.</p>';
+  journalImageUrls.forEach(URL.revokeObjectURL);journalImageUrls=[];
+  document.getElementById('savedWaypoints').innerHTML=personalWaypoints.map(lm=>`<article class="archive-item waypoint-card"><div class="meta">${esc(waypointKindLabel(lm.kind))} // ${lm.submissionId?'SUBMITTED FOR REVIEW':'PRIVATE'}</div><h3>${esc(lm.name)}</h3>${lm.note?`<p>${esc(lm.note)}</p>`:''}<div class="waypoint-actions"><button class="chip" type="button" data-journal-waypoint="${esc(lm.id)}">ADD NOTE</button><button class="chip" type="button" data-show-waypoint="${esc(lm.id)}">MAP</button><button class="chip" type="button" data-submit-waypoint="${esc(lm.id)}" ${lm.submissionId?"disabled":""}>${lm.submissionId?"SUBMITTED":"SUBMIT FOR REVIEW"}</button></div><details><summary>Notes + options (${lm.entries?.length||0})</summary><div class="journal-entries">${[...(lm.entries||[])].sort((a,b)=>Date.parse(b.observedAt)-Date.parse(a.observedAt)).map(entry=>`<div class="journal-entry"><time datetime="${esc(entry.observedAt)}">${esc(entryDate(entry.observedAt))}</time><p>${esc(entry.note)}</p>${entry.photoId?`<img class="journal-photo" data-journal-photo="${esc(entry.photoId)}" alt="Private journal photo" />`:''}<div class="waypoint-actions"><button class="chip" type="button" data-edit-entry="${esc(entry.id)}" data-entry-waypoint="${esc(lm.id)}">EDIT / ADD PHOTO</button><button class="chip" type="button" data-share-entry="${esc(entry.id)}" data-entry-waypoint="${esc(lm.id)}">SHARE…</button><button class="chip" type="button" data-delete-entry="${esc(entry.id)}" data-entry-waypoint="${esc(lm.id)}">REMOVE NOTE</button></div></div>`).join('')||'<p>No dated notes yet.</p>'}</div><div class="waypoint-actions"><button class="chip" type="button" data-edit-waypoint="${esc(lm.id)}">EDIT WAYPOINT</button><button class="chip" type="button" data-submit-waypoint="${esc(lm.id)}" ${lm.submissionId?'disabled':''}>${lm.submissionId?'SUBMITTED':'SUBMIT WAYPOINT'}</button>${lm.submissionId?`<a class="share-action" href="${esc(waypointReviewEmail(lm))}">EMAIL REVIEW REQUEST</a>`:''}<button class="chip" type="button" data-delete-waypoint="${esc(lm.id)}">REMOVE WAYPOINT</button></div><p class="journal-privacy">Journal notes and photos stay private, including when you submit a waypoint. SHARE lets you choose a note or photo to send to another app.</p></details></article>`).join('')||'<p class="lede">Your journal starts with a waypoint. Add a cool spot, rock, bird sighting, plant, or geological feature on the map.</p>';
+  // Loading blobs only for this render prevents deleted photos reappearing.
+  const images=[...document.querySelectorAll('[data-journal-photo]')];
+  for(const img of images)DriftMedia.get(img.dataset.journalPhoto).then(blob=>{
+    if(!blob||!img.isConnected)return;
+    const url=URL.createObjectURL(blob);journalImageUrls.push(url);img.src=url;
+  }).catch(()=>{if(img.isConnected){img.alt='Photo unavailable on this device';}});
 }
 function showWaypointEditor(id=null){
   cancelWaypointPicking();waypointEditId=id;waypointForm.reset();waypointStatus.textContent='';
@@ -705,7 +730,7 @@ function initWaypointTools(){
     if(button.hasAttribute('data-journal-waypoint'))showJournalEditor(id);
     if(button.hasAttribute('data-edit-waypoint'))showWaypointEditor(id);
     if(button.hasAttribute('data-show-waypoint')){cancelWaypointPicking();showView('fieldView');centerOnNextFix=false;waypointLayer.addTo(map);setLayerButton(document.getElementById('waypointsToggle'),true);map.setView([lm.lat,lm.lng],16);}
-    if(button.hasAttribute('data-delete-waypoint')&&confirm(`Remove “${lm.name}” from this device?${lm.submissionId?' Your submitted version will remain with DRIFT.':''}`))savePersonalWaypoints(personalWaypoints.filter(p=>p.id!==id));
+    if(button.hasAttribute('data-delete-waypoint')&&confirm(`Remove “${lm.name}” from this device?${lm.submissionId?' Your submitted version will remain with DRIFT.':''}`)){if(savePersonalWaypoints(personalWaypoints.filter(p=>p.id!==id)))for(const entry of lm.entries||[])if(entry.photoId)DriftMedia.remove(entry.photoId).catch(()=>{});}
     if(button.hasAttribute('data-submit-waypoint'))await submitPersonalWaypoint(lm,button);
   });
   document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{if(pickingWaypoint)cancelWaypointPicking();}));
@@ -724,29 +749,63 @@ async function loadCommunityWaypoints(){
   try{const response=await fetch('/api/waypoints');if(!response.ok)return;const data=await response.json();if(!Array.isArray(data.waypoints))return;communityWaypoints=data.waypoints.filter(validWaypoint).map(lm=>({...lm,source:'community',sensitive:lm.kind==='BURIAL'}));renderWaypoints();}catch{}
 }
 
-let journalWaypointId=null;
+let journalWaypointId=null,journalEditId=null,journalBusy=false,journalPreviewUrl=null;
 const journalDialog=document.getElementById('journalDialog');
-function showJournalEditor(id){
+function showJournalEditor(id,entryId=null){
   const wp=personalWaypoints.find(p=>p.id===id);if(!wp)return;
-  journalWaypointId=id;document.getElementById('journalTitle').textContent=wp.name;
+  const entry=(wp.entries||[]).find(e=>e.id===entryId);
+  journalWaypointId=id;journalEditId=entry?.id||null;document.getElementById('journalTitle').textContent=wp.name;
   document.getElementById('journalEntryForm').reset();document.getElementById('journalEntryStatus').textContent='';
-  const now=new Date();document.getElementById('journalDate').value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('journalText').value=entry?.note||'';
+  const now=entry?new Date(entry.observedAt):new Date();
+  document.getElementById('journalDate').value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('journalRemovePhotoLabel').hidden=!entry?.photoId;
+  const preview=document.getElementById('journalPhotoPreview');preview.hidden=true;
+  if(journalPreviewUrl)URL.revokeObjectURL(journalPreviewUrl);journalPreviewUrl=null;
+  if(entry?.photoId)DriftMedia.get(entry.photoId).then(blob=>{
+    if(!blob||journalEditId!==entry.id||!journalDialog.open)return;
+    journalPreviewUrl=URL.createObjectURL(blob);preview.src=journalPreviewUrl;preview.hidden=false;
+  }).catch(()=>{document.getElementById('journalEntryStatus').textContent='Existing photo could not load. Your note can still be edited.';});
   journalDialog.showModal();
 }
 function initJournalTools(){
-  document.getElementById('closeJournalDialog').onclick=()=>journalDialog.close();
-  document.getElementById('journalEntryForm').onsubmit=e=>{
-    e.preventDefault();const wp=personalWaypoints.find(p=>p.id===journalWaypointId);
+  document.getElementById('closeJournalDialog').onclick=()=>{if(!journalBusy)journalDialog.close();};
+  journalDialog.addEventListener('cancel',e=>{if(journalBusy)e.preventDefault();});
+  document.getElementById('journalEntryForm').onsubmit=async e=>{
+    e.preventDefault();if(journalBusy)return;
+    const wp=personalWaypoints.find(p=>p.id===journalWaypointId),status=document.getElementById('journalEntryStatus');
+    const prior=(wp?.entries||[]).find(entry=>entry.id===journalEditId);
     const note=document.getElementById('journalText').value.trim(),date=new Date(document.getElementById('journalDate').value);
-    if(!wp||!note||!Number.isFinite(date.getTime())){document.getElementById('journalEntryStatus').textContent='Add a note and a valid observation time.';return;}
-    const entry={id:crypto.randomUUID(),observedAt:date.toISOString(),note};
-    if(savePersonalWaypoints(personalWaypoints.map(p=>p.id===wp.id?{...p,entries:[...(p.entries||[]),entry]}:p))){journalDialog.close();toast('Private journal note saved.');}
-    else document.getElementById('journalEntryStatus').textContent='Note not saved. Your text is still here; try again.';
+    const source=document.getElementById('journalPhoto').files?.[0];
+    const remove=document.getElementById('journalRemovePhoto').checked;
+    if(!wp||(!note&&!source&&(!prior?.photoId||remove))||!Number.isFinite(date.getTime())){status.textContent='Add a note or photo and a valid observation time.';return;}
+    journalBusy=true;const button=document.getElementById('saveJournalEntry');button.disabled=true;status.textContent='Saving on this device…';
+    let newPhotoId=null;
+    try{
+      let photoId=remove?null:prior?.photoId||null;
+      if(source){const blob=await prepareFieldPhoto(source);newPhotoId=crypto.randomUUID();await DriftMedia.put(newPhotoId,blob);photoId=newPhotoId;}
+      const entry={...prior,id:prior?.id||crypto.randomUUID(),observedAt:date.toISOString(),note,updatedAt:new Date().toISOString(),photoId};
+      const current=personalWaypoints.find(p=>p.id===wp.id);if(!current)throw new Error('Waypoint no longer exists.');
+      const entries=prior?(current.entries||[]).map(old=>old.id===entry.id?entry:old):[...(current.entries||[]),entry];
+      if(!savePersonalWaypoints(personalWaypoints.map(p=>p.id===wp.id?{...p,entries}:p)))throw new Error('Device storage could not save your note.');
+      if(prior?.photoId&&prior.photoId!==photoId)DriftMedia.remove(prior.photoId).catch(()=>{});
+      journalDialog.close();toast('Private journal entry saved.');
+    }catch(error){if(newPhotoId)await DriftMedia.remove(newPhotoId).catch(()=>{});status.textContent='Entry not saved. Your draft is still here. Check device storage or try another photo.';}
+    finally{journalBusy=false;button.disabled=false;}
   };
-  document.addEventListener('click',e=>{
-    const button=e.target.closest('[data-delete-entry]');if(!button)return;
-    const wp=personalWaypoints.find(p=>p.id===button.dataset.entryWaypoint);if(!wp||!confirm('Remove this private journal note?'))return;
-    savePersonalWaypoints(personalWaypoints.map(p=>p.id===wp.id?{...p,entries:(p.entries||[]).filter(entry=>entry.id!==button.dataset.deleteEntry)}:p));
+  document.addEventListener('click',async e=>{
+    const button=e.target.closest('[data-delete-entry],[data-edit-entry],[data-share-entry]');if(!button)return;
+    const wp=personalWaypoints.find(p=>p.id===button.dataset.entryWaypoint);if(!wp)return;
+    const entry=(wp.entries||[]).find(entry=>entry.id===(button.dataset.deleteEntry||button.dataset.editEntry||button.dataset.shareEntry));if(!entry)return;
+    if(button.hasAttribute('data-edit-entry')){showJournalEditor(wp.id,entry.id);return;}
+    if(button.hasAttribute('data-share-entry')){
+      button.disabled=true;
+      try{const blob=entry.photoId?await DriftMedia.get(entry.photoId):null;
+        DriftShare.open({title:wp.name,text:wp.name+' // DRIFT field journal',privateNote:entry.note,file:blob?new File([blob],'drift-journal-photo.jpg',{type:'image/jpeg'}):null,privatePhoto:true});
+      }catch{toast('Photo could not load. Try again before sharing.');}finally{button.disabled=false;}return;
+    }
+    if(!confirm('Remove this private journal entry and its photo?'))return;
+    if(savePersonalWaypoints(personalWaypoints.map(p=>p.id===wp.id?{...p,entries:(p.entries||[]).filter(item=>item.id!==entry.id)}:p))&&entry.photoId)DriftMedia.remove(entry.photoId).catch(()=>{});
   });
 }
 
@@ -761,7 +820,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   let refreshing=false;
   const wasControlled=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(tracking){toast('UPDATE READY // RELOAD AFTER SAVING YOUR DRIFT');return;}
+    if(tracking||journalDialog.open||waypointDialog.open||document.getElementById('sharedSignalId')?.value){toast('UPDATE READY // RELOAD AFTER SAVING YOUR DRAFT');return;}
     if(wasControlled&&!refreshing){refreshing=true;location.reload();}
   });
   navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
@@ -800,8 +859,9 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
 
   function localLog(signal){
     state.intercepts[signal.id]={time:new Date().toISOString(),name:signal.name};
-    saveState();
+    const saved=saveState();
     renderArchive();
+    return saved;
   }
 
   function ensureDialog(){
@@ -821,6 +881,7 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
         <label>NOTE <span>optional</span><textarea id="sharedNote" maxlength="500" rows="4" placeholder="What did you notice?"></textarea></label>
         <label>PHOTO <span>optional</span><input id="sharedPhoto" type="file" accept="image/*" capture="environment" /></label>
         <label class="share-check"><input id="sharedPublic" type="checkbox" /> <span>SHARE MY NAME, NOTE AND ANY ATTACHED PHOTO PUBLICLY IN THE FIELD LOG + PHOTO LOG</span></label>
+        <p id="sharedSubmitStatus" role="status" hidden></p>
         <div class="shared-actions">
           <button type="button" class="primary" id="sharedSubmit">SAVE FIND</button>
           <button value="cancel" class="secondary">CANCEL</button>
@@ -833,11 +894,13 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
 
   function openSharedDialog(signal){
     const dialog=ensureDialog();
+    if(document.getElementById('sharedSignalId').value===signal.id){dialog.showModal();return;}
     document.getElementById('sharedSignalId').value=signal.id;
     document.getElementById('sharedAlias').value='';
     document.getElementById('sharedNote').value='';
     document.getElementById('sharedPhoto').value='';
     document.getElementById('sharedPublic').checked=false;
+    document.getElementById('sharedSubmitStatus').hidden=true;
     dialog.showModal();
   }
 
@@ -911,18 +974,20 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
       }
 
       localLog(signal);
+      document.getElementById('sharedSignalId').value='';
       dialog.close();
       openSignal(signal.id);
       toast(!photoUploaded?'FIND SAVED // PHOTO COULD NOT UPLOAD':payload.public?'INTERCEPT TRANSMITTED TO DRIFT':'PRIVATE INTERCEPT SAVED');
       loadSharedActivity();
     }catch(error){
-      localLog(signal);
-      dialog.close();
-      openSignal(signal.id);
       const reason=String(error?.message||'');
-      if(reason==='outside_intercept_radius')toast('OUTSIDE INTERCEPT RADIUS // SAVED ON DEVICE ONLY');
-      else if(reason==='live_location_required')toast('LOCATION REQUIRED FOR SHARED LOG // SAVED ON DEVICE');
-      else toast('SHARED LOG OFFLINE // SAVED ON DEVICE');
+      const status=document.getElementById('sharedSubmitStatus');
+      status.hidden=false;
+      status.textContent=reason==='outside_intercept_radius'
+        ?'You are outside this signal’s find radius. Your draft is still here; return to the signal and retry.'
+        :reason==='live_location_required'
+          ?'A precise location is required. Your draft is still here; close this form, tap LOCATE, then reopen SAVE FIND.'
+          :'The shared log could not save this find. Your note and photo are still in this form. Check your connection and retry.';
     }finally{
       button.disabled=false;button.textContent='SAVE FIND';
     }
@@ -979,3 +1044,12 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   updateBackendStatus();
   window.addEventListener('online',()=>{loadSharedActivity();updateBackendStatus();});
 
+
+// Signup stays hidden until an actual MailerLite form URL is configured.
+(async()=>{
+ try{const response=await fetch('/api/integrations',{cache:'no-store'});if(!response.ok)return;
+ const data=await response.json();if(!data.mailerlite_form_url)return;
+ const url=new URL(data.mailerlite_form_url);if(url.protocol!=='https:')return;
+ document.getElementById('newsletterLink').href=url.href;document.getElementById('newsletterSection').hidden=false;
+ }catch{}
+})();

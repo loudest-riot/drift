@@ -60,6 +60,9 @@ assert.equal((await api('/api/intercepts/'+privateFind.id+'/photo')).status,404)
 const textOnly=await create(true,'No picture');
 const second=await create(true,'Another photograph');
 assert.equal((await upload(second.id,second.photo_upload_token)).status,201);
+// Keep ordering deterministic; SQLite CURRENT_TIMESTAMP has second precision.
+db.prepare('UPDATE intercepts SET created_at=? WHERE id=?').run('2026-10-10 12:00:00',first.id);
+db.prepare('UPDATE intercepts SET created_at=? WHERE id=?').run('2026-10-11 12:00:00',second.id);
 const one=await api('/api/intercepts?photos_only=1&limit=1');
 const page1=await one.json();
 assert.equal(page1.intercepts.length,1);
@@ -77,3 +80,23 @@ assert.ok(!JSON.stringify(all).includes(first.photo_upload_token));
 assert.ok(!JSON.stringify(all).includes(privateFind.photo_upload_token));
 assert.equal((await upload(first.id,second.photo_upload_token)).status,403);
 console.log('PASS photo-only pagination, privacy, public retrieval, one-time photo authorization and MIME checks');
+
+// Bad input must be a client error rather than a crashed API or coerced location.
+for(const body of [null,[],true,{...coords,lat:null},{...coords,lng:''},{...coords,lat:'42.36733'}]){
+  const res=await api('/api/intercepts',{method:'POST',body:JSON.stringify(body)});
+  assert.equal(res.status,400);
+}
+assert.equal((await api('/api/intercepts',{method:'POST',body:JSON.stringify({...coords,note:'x'.repeat(21000)})})).status,413);
+const stream=new ReadableStream({start(controller){controller.enqueue(new Uint8Array(21001));controller.close();}});
+assert.equal((await api('/api/intercepts',{method:'POST',body:stream,duplex:'half'})).status,413);
+for(const query of ['limit=1.5&offset=0.5','limit=Infinity&offset=Infinity','limit=foo&offset=bar']){
+  assert.equal((await api('/api/intercepts?'+query)).status,200);
+}
+db.prepare('UPDATE intercepts SET verified=0 WHERE id=?').run(first.id);
+assert.equal((await api('/api/intercepts/'+first.id+'/photo')).status,404);
+console.log('PASS malformed find bodies, strict coordinates, chunked payload limits, finite integer pagination and unverified photo privacy');
+
+assert.equal((await (await worker.fetch(new Request('https://drift.test/api/integrations'),{})).json()).mailerlite_form_url,null);
+for(const url of ['javascript:alert(1)','http://signup.test','https://user:secret@signup.test'])assert.equal((await (await worker.fetch(new Request('https://drift.test/api/integrations'),{MAILERLITE_FORM_URL:url})).json()).mailerlite_form_url,null);
+assert.equal((await (await worker.fetch(new Request('https://drift.test/api/integrations'),{MAILERLITE_FORM_URL:'https://signup.test/drift'})).json()).mailerlite_form_url,'https://signup.test/drift');
+console.log('PASS optional MailerLite public form URL configuration and invalid scheme/credential rejection');

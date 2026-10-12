@@ -8,10 +8,10 @@
   <link rel="canonical" href="https://drift.loudestriot.com/photo-log.html" />
   <link rel="icon" href="icons/signal-glyph-192.png" />
   <title>Photo Log // DRIFT</title>
-  <link rel="stylesheet" href="styles.css?v=25" />
-  <link rel="stylesheet" href="photo-log.css?v=25" />
+  <link rel="stylesheet" href="styles.css?v=26" />
+  <link rel="stylesheet" href="photo-log.css?v=26" />
 </head>
-<body class="photo-log-page" data-release="25">
+<body class="photo-log-page" data-release="26">
   <main class="photos-wrap">
     <header class="photos-top">
       <a class="photos-back" href="./">← DRIFT / MAP</a>
@@ -52,7 +52,7 @@
   </main>
   <dialog id="photoViewer" class="photo-viewer" aria-label="Photograph viewer">
     <div class="viewer-top">
-      <span class="viewer-index" id="viewerIndex"></span>
+      <button id="viewerShare" type="button">SHARE…</button><span class="viewer-index" id="viewerIndex"></span>
       <button id="viewerClose" type="button" aria-label="Close photograph">CLOSE ×</button>
     </div>
     <div class="viewer-image-wrap"><img id="viewerImage" alt="" /></div>
@@ -66,6 +66,7 @@
       <button id="viewerNext" type="button" aria-label="Next photo">→</button>
     </div>
   </dialog>
-  <script src="photo-log.js?v=25" defer></script>
+  <script src="share.js?v=26" defer></script>
+<script src="photo-log.js?v=26" defer></script>
 </body>
 </html>

@@ -42,6 +42,7 @@ function render(){
     if(!p.address)li.append(meta,title);
     li.append(desc);
   }
+  const share=document.createElement('button');share.type='button';share.className='share-action';share.textContent='SHARE…';share.onclick=()=>DriftShare.open({title:p.name,text:p.name+' // Hines Park with DRIFT',url:'https://drift.loudestriot.com/places.html#'+encodeURIComponent(p.id)});actions.append(share);
   li.append(actions);frag.append(li);
  }
  list.append(frag);

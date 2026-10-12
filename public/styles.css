@@ -242,3 +242,11 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #b5d
 #tracker{top:auto;bottom:12px;right:12px;width:auto;max-width:calc(100% - 24px);padding:6px}
 #tracker .route-controls-body{width:min(290px,calc(100vw - 48px));max-height:45dvh;overflow:auto;padding:8px}
 #tracker .tracker-top>div{display:block}#tracker .track-stats,#tracker .track-actions{display:flex}#tracker .tracker-top strong,#tracker .track-stats,#tracker .track-actions button,#tracker .mini-primary{font-size:14px}#tracker .eyebrow{font-size:12px}
+
+.journal-photo{display:block;width:100%;max-width:360px;max-height:280px;object-fit:contain;border-radius:10px;margin:10px 0;background:#e7e9e3}
+#journalPhotoPreview[hidden],.drift-share-dialog [hidden]{display:none}
+.drift-share-dialog{width:min(480px,calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto;border:1px solid #b8beb5;border-radius:16px;padding:18px;background:#f3f3ef;color:#171a18;font:16px/1.5 -apple-system,BlinkMacSystemFont,Arial,sans-serif}
+.drift-share-dialog::backdrop{background:#0009}.drift-share-dialog h2{font-size:20px;margin:0}.drift-share-dialog p{font-size:14px;overflow-wrap:anywhere}.drift-share-dialog label{display:block;margin:12px 0}.drift-share-dialog textarea{width:100%;font:inherit;font-size:16px;padding:10px;background:white;border:1px solid #aeb9a8;border-radius:8px}
+.drift-share-dialog img{max-width:100%;max-height:200px;object-fit:contain}.drift-share-actions{display:flex;flex-wrap:wrap;gap:8px}.drift-share-dialog button,.drift-share-dialog a,.share-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 12px;font:700 12px/1.4 -apple-system,BlinkMacSystemFont,Arial,sans-serif;color:#344d36;background:#fff;border:1px solid #aeb9a8;border-radius:8px;text-decoration:none;cursor:pointer}.drift-share-dialog button:disabled{opacity:.5;cursor:default}.drift-share-dialog :focus-visible{outline:3px solid #719745;outline-offset:2px}
+
+#journalRemovePhotoLabel[hidden],#newsletterSection[hidden]{display:none}.waypoint-dialog .export-check input{width:20px;min-height:20px;height:20px}

@@ -1,3 +1,16 @@
+## Release 26 — Reliability fixes (October 11, 2026)
+
+- Failed find submissions keep their note/photo draft open, including closing and reopening the same signal, instead of claiming the timestamp-only local record preserved the draft.
+- Device storage failures no longer interrupt route stopping or hint dismissal; unsaved session data remain available for export.
+- Reject malformed intercept bodies and nonnumeric coordinates with 400 responses. Bound chunked JSON requests and normalize pagination to finite integers.
+- Photo retrieval requires public and verified status, matching the gallery.
+- Offline shell installation tolerates an unavailable Leaflet CDN and reuses previously cached Leaflet assets; cache Field Log, Contact, and Privacy. Offline navigation with a query resolves the requested cached page rather than opening the map.
+- Private journal entries support optional metadata-stripped photos stored in IndexedDB, later edits/replacements, removal, and optional photo JSON export. No journal photo is uploaded with a waypoint.
+- Review-before-sharing controls for journal entries, Hines places, public finds/photos, and DRIFT. Device share sheet, social composer links, caption copy, and photo download fallbacks.
+- Submitted waypoints have an email review draft addressed to sounds@loudestriot.com. No automatic mail delivery is claimed.
+- Optional MailerLite hosted-form integration remains hidden until MAILERLITE_FORM_URL is configured; setup is documented in docs/MAILERLITE.md.
+- Bump app assets/cache to release 26. Existing device storage keys remain unchanged.
+
 ## Release 25 — Newburgh access address clarification (October 9, 2026)
 
 - Matched a visitor-provided Hines Drive address range (37507–39399 Edward N Hines Dr, Livonia, MI 48150) to public listings for Newburgh Lake Public Access.

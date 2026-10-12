@@ -79,7 +79,7 @@ async function ensureSchema(env){
 }
 
 function finiteCoord(v,min,max){
-  const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null;
+  const n=v;return typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max?n:null;
 }
 
 function distanceM(a,b){
@@ -95,6 +95,29 @@ function cleanText(value,max){
   return text?text.slice(0,max):null;
 }
 
+function pageInteger(value,fallback,min,max){
+  if(value===null||value.trim()==='')return fallback;
+  const n=Number(value);
+  return Number.isFinite(n)?Math.min(Math.max(Math.floor(n),min),max):fallback;
+}
+
+async function readJsonBody(request,maxBytes){
+  if(Number(request.headers.get('content-length'))>maxBytes)return {error:json({error:'payload_too_large'},413)};
+  if(!request.body)return {error:json({error:'invalid_json'},400)};
+  const reader=request.body.getReader();let size=0;const chunks=[];
+  while(true){
+    const {done,value}=await reader.read();if(done)break;
+    size+=value.byteLength;
+    if(size>maxBytes){await reader.cancel();return {error:json({error:'payload_too_large'},413)};}
+    chunks.push(value);
+  }
+  const bytes=new Uint8Array(size);let offset=0;
+  for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+  let body;try{body=JSON.parse(new TextDecoder().decode(bytes));}catch{return {error:json({error:'invalid_json'},400)};}
+  if(!body||Array.isArray(body)||typeof body!=='object')return {error:json({error:'invalid_json'},400)};
+  return {body};
+}
+
 async function listSignals(env){
   await ensureSchema(env);
   const {results=[]}=await env.DB.prepare(`SELECT id,code,name,region,lat,lng,type,status,transmission,clue,link,intercept_radius_m FROM signals WHERE active=1 ORDER BY code`).all();
@@ -104,10 +127,10 @@ async function listSignals(env){
 async function listIntercepts(request,env){
   await ensureSchema(env);
   const url=new URL(request.url);
-  const limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||20,1),50);
+  const limit=pageInteger(url.searchParams.get('limit'),20,1,50);
   const signalId=cleanText(url.searchParams.get('signal_id'),64);
   const photosOnly=url.searchParams.get('photos_only')==='1';
-  const offset=Math.min(Math.max(Number(url.searchParams.get('offset'))||0,0),10000);
+  const offset=pageInteger(url.searchParams.get('offset'),0,0,10000);
   let query=`SELECT i.id,i.signal_id,i.alias,i.note,i.photo_key,i.created_at,s.code,s.name
              FROM intercepts i JOIN signals s ON s.id=i.signal_id
              WHERE i.public=1 AND i.verified=1`;
@@ -122,10 +145,9 @@ async function listIntercepts(request,env){
 
 async function createIntercept(request,env){
   await ensureSchema(env);
-  const length=Number(request.headers.get('content-length')||0);
-  if(length>20000)return json({error:'payload_too_large'},413);
-  let body;
-  try{body=await request.json();}catch{return json({error:'invalid_json'},400);}
+  const parsed=await readJsonBody(request,20000);
+  if(parsed.error)return parsed.error;
+  const body=parsed.body;
 
   const signalId=cleanText(body.signal_id,64);
   const lat=finiteCoord(body.lat,-90,90),lng=finiteCoord(body.lng,-180,180);
@@ -157,14 +179,9 @@ async function listLandmarks(env,key='landmarks'){
   return json({[key]:results});
 }
 async function createLandmark(request,env){
-  // Bound the actual body, including chunked requests without Content-Length.
-  if(Number(request.headers.get('content-length'))>8192)return json({error:'payload_too_large'},413);
-  if(!request.body)return json({error:'invalid_json'},400);
-  const reader=request.body.getReader();let size=0,chunks=[];
-  while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>8192){await reader.cancel();return json({error:'payload_too_large'},413);}chunks.push(value);}
-  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
-  let body;try{body=JSON.parse(new TextDecoder().decode(bytes));}catch{return json({error:'invalid_json'},400);}
-  if(!body||Array.isArray(body)||typeof body!=='object')return json({error:'invalid_landmark'},400);
+  const parsed=await readJsonBody(request,8192);
+  if(parsed.error)return parsed.error;
+  const body=parsed.body;
   const id=body.id;
   if(typeof id!=='string'||!/^[-0-9a-f]{36}$/i.test(id)||typeof body.name!=='string'||!body.name.trim()||body.name.length>80||!LANDMARK_KINDS.has(body.kind)||typeof body.lat!=='number'||!Number.isFinite(body.lat)||Math.abs(body.lat)>90||typeof body.lng!=='number'||!Number.isFinite(body.lng)||Math.abs(body.lng)>180||(body.note!=null&&(typeof body.note!=='string'||body.note.length>500)))return json({error:'invalid_landmark'},400);
   const name=cleanText(body.name,80);if(!name)return json({error:'invalid_landmark'},400);
@@ -208,7 +225,7 @@ async function uploadPhoto(request,env,interceptId){
 async function getPhoto(request,env,interceptId){
   if(!env.PHOTOS)return json({error:'photo_storage_unavailable'},503);
   await ensureSchema(env);
-  const row=await env.DB.prepare(`SELECT photo_key FROM intercepts WHERE id=? AND public=1`).bind(interceptId).first();
+  const row=await env.DB.prepare(`SELECT photo_key FROM intercepts WHERE id=? AND public=1 AND verified=1`).bind(interceptId).first();
   if(!row?.photo_key)return json({error:'photo_not_found'},404);
   const object=await env.PHOTOS.get(row.photo_key);
   if(!object)return json({error:'photo_not_found'},404);
@@ -222,6 +239,14 @@ async function getPhoto(request,env,interceptId){
 
 async function api(request,env){
   const url=new URL(request.url),path=url.pathname;
+  if(path==='/api/integrations'&&request.method==='GET'){
+    let mailerliteFormUrl=null;
+    try{
+      const configured=new URL(env.MAILERLITE_FORM_URL);
+      if(configured.protocol==='https:'&&!configured.username&&!configured.password)mailerliteFormUrl=configured.href;
+    }catch{}
+    return json({mailerlite_form_url:mailerliteFormUrl});
+  }
   if(path==='/api/health'){
     if(env.DB)await ensureSchema(env);
     return json({ok:true,database:!!env.DB,photos:!!env.PHOTOS,privacy:'location is verified in memory and exact coordinates are not stored with intercepts'});
