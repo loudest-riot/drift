@@ -1,6 +1,6 @@
 // Run with Node 24+: node tests/landmarks-api.mjs
 import assert from 'node:assert/strict';import {DatabaseSync} from 'node:sqlite';import {readFileSync} from 'node:fs';
-const worker=(await import('data:text/javascript;base64,'+Buffer.from(readFileSync(new URL('../src/index.js', import.meta.url))).toString('base64'))).default;
+const worker=(await import(new URL('../src/index.js',import.meta.url))).default;
 const db=new DatabaseSync(':memory:');const env={DB:{prepare(sql){return {args:[],bind(...args){this.args=args;return this;},async run(){return db.prepare(sql).run(...this.args);},async all(){return {results:db.prepare(sql).all(...this.args)};},async first(){return db.prepare(sql).get(...this.args);},sql};},async batch(items){for(const i of items)db.exec(i.sql);}}};
 const valid={id:crypto.randomUUID(),name:'Woodland',kind:'PARK',lat:42.37,lng:-83.4,note:'Quiet place',status:'approved',public:true};
 const post=body=>worker.fetch(new Request('https://drift.test/api/landmarks',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),env);

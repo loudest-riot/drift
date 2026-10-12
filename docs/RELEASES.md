@@ -1,3 +1,14 @@
+## Release 27 — Resend email foundation (October 11, 2026)
+
+- Create DRIFT Field Notes segment in connected Resend account; no contact imports or newsletter sends.
+- Signup requires unchecked consent and email confirmation within 48 hours before segment membership. GET links show a confirm button; only POST adds a contact, so email link scanners cannot opt visitors in.
+- Preserve existing Resend global unsubscribe status. No automatic resubscription or contact imports.
+- Durable D1 email outbox uses stable provider idempotency keys, bounded exponential retry, interrupted-send recovery, and a 22-hour retry cutoff. Ten-minute Worker cron processes queued messages.
+- Waypoint review emails target sounds@loudestriot.com using the stored submission, excluding private journal entries/photos. Duplicate submissions reuse one outbox job and do not approve the waypoint.
+- Signup rate limits and honeypot, with an application delivery cap of 90 attempts per UTC day, below this account's provider cap of 100. Other account sends share the provider allowance.
+- Forms and sending stay disabled until RESEND_API_KEY and explicit activation flags are set in the existing Cloudflare Worker after sending-domain verification.
+- Frontend/cache advance together to release 27. See docs/RESEND.md for activation and verification.
+
 ## Release 26 — Reliability fixes (October 11, 2026)
 
 - Failed find submissions keep their note/photo draft open, including closing and reopening the same signal, instead of claiming the timestamp-only local record preserved the draft.

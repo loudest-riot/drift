@@ -1,3 +1,4 @@
+import {emailStatus,newsletterApi,queueWaypointAlert,processEmailQueue} from './email.js';
 const API_HEADERS={
   'content-type':'application/json; charset=utf-8',
   'cache-control':'no-store',
@@ -178,7 +179,7 @@ async function listLandmarks(env,key='landmarks'){
   const {results=[]}=await env.DB.prepare(`SELECT id,name,kind,note,lat,lng FROM landmarks WHERE status='approved' ORDER BY created_at DESC LIMIT 500`).all();
   return json({[key]:results});
 }
-async function createLandmark(request,env){
+async function createLandmark(request,env,ctx){
   const parsed=await readJsonBody(request,8192);
   if(parsed.error)return parsed.error;
   const body=parsed.body;
@@ -189,7 +190,12 @@ async function createLandmark(request,env){
   // Client UUID makes a retry safe when a response or local status save is lost.
   // A caller can never update a reviewed record or choose public visibility.
   await env.DB.prepare(`INSERT OR IGNORE INTO landmarks (id,name,kind,note,lat,lng,status) VALUES (?,?,?,?,?,?,'pending')`).bind(id,name,body.kind,cleanText(body.note,500),body.lat,body.lng).run();
-  return json({ok:true,id,submitted:true},201);
+  let notificationQueued=false;
+  try{const stored=await env.DB.prepare('SELECT * FROM landmarks WHERE id=?').bind(id).first();
+    if(stored?.status==='pending')notificationQueued=await queueWaypointAlert(env,stored);
+    if(notificationQueued&&ctx?.waitUntil)ctx.waitUntil(processEmailQueue(env));
+  }catch(error){console.error('Waypoint email queue unavailable');}
+  return json({ok:true,id,submitted:true,notification_queued:notificationQueued},201);
 }
 
 async function uploadPhoto(request,env,interceptId){
@@ -237,15 +243,16 @@ async function getPhoto(request,env,interceptId){
   return new Response(object.body,{headers});
 }
 
-async function api(request,env){
+async function api(request,env,ctx){
   const url=new URL(request.url),path=url.pathname;
+  if(path.startsWith('/api/newsletter/'))return newsletterApi(request,env,ctx);
   if(path==='/api/integrations'&&request.method==='GET'){
     let mailerliteFormUrl=null;
     try{
       const configured=new URL(env.MAILERLITE_FORM_URL);
       if(configured.protocol==='https:'&&!configured.username&&!configured.password)mailerliteFormUrl=configured.href;
     }catch{}
-    return json({mailerlite_form_url:mailerliteFormUrl});
+    return json({mailerlite_form_url:mailerliteFormUrl,...emailStatus(env)});
   }
   if(path==='/api/health'){
     if(env.DB)await ensureSchema(env);
@@ -253,9 +260,9 @@ async function api(request,env){
   }
   if(!env.DB)return json({error:'database_unavailable'},503);
   if(path==='/api/waypoints'&&request.method==='GET')return listLandmarks(env,'waypoints');
-  if(path==='/api/waypoints'&&request.method==='POST')return createLandmark(request,env);
+  if(path==='/api/waypoints'&&request.method==='POST')return createLandmark(request,env,ctx);
   if(path==='/api/landmarks'&&request.method==='GET')return listLandmarks(env);
-  if(path==='/api/landmarks'&&request.method==='POST')return createLandmark(request,env);
+  if(path==='/api/landmarks'&&request.method==='POST')return createLandmark(request,env,ctx);
   if(path==='/api/signals'&&request.method==='GET')return listSignals(env);
   if(path==='/api/intercepts'&&request.method==='GET')return listIntercepts(request,env);
   if(path==='/api/intercepts'&&request.method==='POST')return createIntercept(request,env);
@@ -266,10 +273,11 @@ async function api(request,env){
 }
 
 export default {
-  async fetch(request,env){
+  scheduled(event,env,ctx){ctx.waitUntil(processEmailQueue(env));},
+  async fetch(request,env,ctx){
     const url=new URL(request.url);
     if(url.pathname.startsWith('/api/')){
-      try{return await api(request,env);}catch(error){
+      try{return await api(request,env,ctx);}catch(error){
         console.error(error);
         return json({error:'server_error'},500);
       }

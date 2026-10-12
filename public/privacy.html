@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0a0c0b" />
   <title>Privacy // DRIFT</title>
-  <link rel="stylesheet" href="styles.css?v=26" />
+  <link rel="stylesheet" href="styles.css?v=27" />
   
   
 </head>
@@ -31,7 +31,7 @@
 
     <h2>JOURNAL PHOTOS + SOCIAL SHARING</h2>
     <p>Private journal photos are resized and re-encoded to remove embedded metadata, then stored in this browser on this device. They are not uploaded with waypoint submissions. You can edit notes, add or replace a photo later, and remove an entry and its photo. Clearing site data erases these photos. Select the separate photo export checkbox to include them in a private JSON backup.</p>
-    <p>SHARE opens a preview. Private journal notes and photos are excluded until selected. Exact waypoint coordinates are never added to social shares. Sharing sends only the reviewed caption, link, and selected photo to the app you choose; that app handles posting. The place name or visible photo content can still reveal a location. Email review request opens a draft to sounds@loudestriot.com containing the submitted waypoint details and exact pin, without private journal entries or photos. Submission itself saves a pending database record, not an email.</p>
+    <p>SHARE opens a preview. Private journal notes and photos are excluded until selected. Exact waypoint coordinates are never added to social shares. Sharing sends only the reviewed caption, link, and selected photo to the app you choose; that app handles posting. The place name or visible photo content can still reveal a location. Email review request opens a draft to sounds@loudestriot.com containing the submitted waypoint details and exact pin, without private journal entries or photos. Submission saves a pending database record. If Resend alerts are activated, DRIFT queues an email with those submitted waypoint details to sounds@loudestriot.com. It excludes private journal entries and photos. Email delivery does not approve the submission.</p>
     <h2>SHARED INTERCEPTS</h2>
     <p>If you choose to transmit an intercept to DRIFT, the shared database may store the signal identifier, an optional field name, an optional note, whether you chose public display, a verification flag, an optional photo reference, and the submission time.</p>
     <p>The checkbox to show an intercept in the public activity log is off by default. A non-public intercept is not displayed in the public activity feed.</p>
@@ -41,7 +41,7 @@
 <p>Curated field dispatches in the Photo Log are photographs deliberately selected by the project editor, separate from visitor finds. Do not submit photos containing faces, license plates, addresses, or other identifying details without permission. Photos can still reveal a place from their visual content even without GPS metadata.</p>
 
     <h2>EMAIL SIGNUP</h2>
-    <p>If configured, FIELD NOTES BY EMAIL opens our MailerLite form. MailerLite collects the information you enter there and handles confirmation and unsubscribe preferences. Waypoint submissions and private journal content are not added to the mailing list.</p>
+    <p>If activated, FIELD NOTES BY EMAIL sends your address and explicit signup choice to DRIFT. A confirmation email is sent through Resend; you join the DRIFT Field Notes segment only after confirming. DRIFT stores the address, consent version, request and confirmation times, and a confirmation-token hash in its private D1 database. Temporary delivery jobs hold the message until sent, then discard its body. Unconfirmed requests are removed after expiration plus a short grace period. Short-lived hashed address/IP counters limit abuse. Resend handles sending and newsletter unsubscribe preferences. If a MailerLite form is configured instead, the link opens that provider’s form. Waypoint submissions and private journal content are not added to the mailing list.</p>
     <h2>NETWORK + HOSTING DATA</h2>
     <p>DRIFT is hosted on Cloudflare. Like other internet infrastructure providers, Cloudflare may process ordinary request and security metadata as part of delivering and protecting the service. DRIFT's application database does not intentionally add your IP address or exact verification coordinates to an intercept record.</p>
 

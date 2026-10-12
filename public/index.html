@@ -27,9 +27,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css?v=26" />
+  <link rel="stylesheet" href="styles.css?v=27" />
 </head>
-<body data-release="26">
+<body data-release="27">
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand-home" href="./" aria-label="DRIFT home">
@@ -229,7 +229,14 @@
             <a class="internal" href="contact.html">Contact</a>
             <a class="internal" href="privacy.html">Privacy + Field Data</a>
           </div>
-          <section id="newsletterSection" hidden><h3>FIELD NOTES BY EMAIL</h3><p>DRIFT updates, new discoveries, and sounds from the field.</p><a id="newsletterLink" class="share-action" target="_blank" rel="noopener noreferrer">SIGN UP WITH MAILERLITE ↗</a><p>Opens our MailerLite signup form. Joining is optional and separate from submitting a waypoint.</p></section>
+          <section id="newsletterSection" hidden><h3>FIELD NOTES BY EMAIL</h3><p>DRIFT updates, new discoveries, and sounds from the field.</p><form id="newsletterForm" hidden>
+          <label for="newsletterEmail">Email address</label><input id="newsletterEmail" type="email" maxlength="254" autocomplete="email" required placeholder="you@example.com" />
+          <div class="newsletter-honeypot" aria-hidden="true"><label>Leave empty<input id="newsletterWebsite" type="text" tabindex="-1" autocomplete="off" /></label></div>
+          <label class="export-check"><input id="newsletterConsent" type="checkbox" required /> Send me DRIFT updates, discoveries, and sounds from the field.</label>
+          <p>Confirm your address by email. Unsubscribe from any newsletter. <a href="privacy.html">Privacy</a></p>
+          <button id="newsletterSubmit" class="mini-primary" type="submit">JOIN FIELD NOTES</button><p id="newsletterStatus" role="status"></p>
+          </form>
+          <a id="newsletterLink" class="share-action" target="_blank" rel="noopener noreferrer">SIGN UP WITH MAILERLITE ↗</a><p id="newsletterProviderNote">Joining is optional and separate from submitting a waypoint.</p></section>
           <button class="chip" type="button" onclick="DriftShare.open({title:'DRIFT',text:'Explore Hines Park with DRIFT // Loudest Riot Sounds'})">SHARE DRIFT…</button>
           <p class="directory-note">Public shared intercepts are opt-in. Exact verification coordinates are not stored with an intercept.</p>
         </section>
@@ -317,9 +324,9 @@
   </dialog>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="journal-media.js?v=26"></script>
-  <script src="share.js?v=26"></script>
-  <script src="app.js?v=26"></script>
+  <script src="journal-media.js?v=27"></script>
+  <script src="share.js?v=27"></script>
+  <script src="app.js?v=27"></script>
 </body>
 </html>
 

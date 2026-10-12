@@ -23,5 +23,10 @@
       "binding": "PHOTOS",
       "bucket_name": "drift-photos"
     }
-  ]
+  ],
+  "triggers": {
+    "crons": [
+      "*/10 * * * *"
+    ]
+  }
 }

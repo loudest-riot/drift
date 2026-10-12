@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {readFileSync} from 'node:fs';
 
-const worker=(await import('data:text/javascript;base64,'+
-  Buffer.from(readFileSync(new URL('../src/index.js',import.meta.url))).toString('base64'))).default;
+const worker=(await import(new URL('../src/index.js',import.meta.url))).default;
 const db=new DatabaseSync(':memory:');
 const objects=new Map();
 const env={

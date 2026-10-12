@@ -742,7 +742,7 @@ async function submitPersonalWaypoint(lm,button){
     const response=await fetch('/api/waypoints',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:lm.id,name:lm.name,note:lm.note,kind:lm.kind,lat:lm.lat,lng:lm.lng})});
     const result=await response.json();if(!response.ok||!result.id)throw new Error('Could not submit');
     const next=personalWaypoints.map(p=>p.id===lm.id?{...p,submissionId:result.id}:p);
-    if(savePersonalWaypoints(next))toast('Submitted for review. Your waypoint is still saved on this device.');else toast('Submitted, but status could not save on this device. Retrying will not create a duplicate.');
+    if(savePersonalWaypoints(next))toast(result.notification_queued?'Submitted for review // email alert queued.':'Submitted for review. Email review request is available in Notes + options.');else toast('Submitted, but status could not save on this device. Retrying will not create a duplicate.');
   }catch{button.disabled=false;button.textContent='SUBMIT WAYPOINT';toast('Not submitted. Your waypoint is saved on this device; try again when connected.');}
 }
 async function loadCommunityWaypoints(){
@@ -1045,11 +1045,27 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{
   window.addEventListener('online',()=>{loadSharedActivity();updateBackendStatus();});
 
 
-// Signup stays hidden until an actual MailerLite form URL is configured.
+// Real signup appears only after the backend has been activated.
 (async()=>{
  try{const response=await fetch('/api/integrations',{cache:'no-store'});if(!response.ok)return;
- const data=await response.json();if(!data.mailerlite_form_url)return;
- const url=new URL(data.mailerlite_form_url);if(url.protocol!=='https:')return;
- document.getElementById('newsletterLink').href=url.href;document.getElementById('newsletterSection').hidden=false;
+ const data=await response.json();
+ if(data.newsletter===true){
+  document.getElementById('newsletterForm').hidden=false;document.getElementById('newsletterLink').hidden=true;document.getElementById('newsletterSection').hidden=false;
+  document.getElementById('newsletterProviderNote').textContent='Powered by Resend. Signup is separate from waypoint submissions.';
+ }else if(data.mailerlite_form_url){
+  const url=new URL(data.mailerlite_form_url);if(url.protocol!=='https:')return;
+  document.getElementById('newsletterLink').href=url.href;document.getElementById('newsletterSection').hidden=false;
+ }
  }catch{}
 })();
+document.getElementById('newsletterForm').onsubmit=async event=>{
+ event.preventDefault();const button=document.getElementById('newsletterSubmit'),status=document.getElementById('newsletterStatus');
+ if(button.disabled)return;button.disabled=true;status.textContent='Requesting your confirmation email…';
+ try{
+  const response=await fetch('/api/newsletter/signup',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:document.getElementById('newsletterEmail').value,consent:document.getElementById('newsletterConsent').checked,website:document.getElementById('newsletterWebsite').value})});
+  const data=await response.json();
+  if(response.ok){status.textContent=data.message;document.getElementById('newsletterForm').reset();}
+  else status.textContent=response.status===429?'Please wait before trying again.':response.status===400?'Enter a valid email and select the signup checkbox.':'Email signup is temporarily unavailable. Your address has not been added to the mailing list.';
+ }catch{status.textContent='Could not reach DRIFT. Check your connection and try again.';}
+ finally{button.disabled=false;}
+};
